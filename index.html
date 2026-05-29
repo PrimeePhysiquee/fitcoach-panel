@@ -3371,7 +3371,10 @@ async function recargarCliente() {
   DB.clientes[idx].cargado = false;
   await selectCliente(idx);
 }
-
+} else if (action === "ia" && params.prompt) {
+  const decoded = decodeURIComponent(params.prompt);
+  resultado = llamarIA(decoded);
+}
 init();
 </script>
 </body>
