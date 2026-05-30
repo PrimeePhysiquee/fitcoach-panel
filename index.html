@@ -1,0 +1,2004 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FitCoach AI — Panel de Análisis</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --bg2: #111118;
+    --bg3: #1a1a24;
+    --card: #16161f;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.12);
+    --accent: #7c6af7;
+    --accent2: #a394ff;
+    --accent-glow: rgba(124,106,247,0.15);
+    --green: #3ecf8e;
+    --green-bg: rgba(62,207,142,0.1);
+    --red: #f87171;
+    --red-bg: rgba(248,113,113,0.1);
+    --amber: #fbbf24;
+    --amber-bg: rgba(251,191,36,0.1);
+    --text: #e8e8f0;
+    --text2: #9090a8;
+    --text3: #5a5a72;
+    --mono: 'DM Mono', monospace;
+    --sans: 'DM Sans', sans-serif;
+    --display: 'Syne', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 14px;
+  }
+
+  /* LAYOUT */
+  .app { display: flex; min-height: 100vh; }
+
+  .sidebar {
+    width: 240px;
+    background: var(--bg2);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    flex-shrink: 0;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+  }
+
+  .sidebar-logo {
+    padding: 24px 20px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .logo-mark {
+    font-family: var(--display);
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: var(--text);
+  }
+
+  .logo-mark span { color: var(--accent2); }
+
+  .logo-sub {
+    font-size: 11px;
+    color: var(--text3);
+    font-family: var(--mono);
+    margin-top: 2px;
+    letter-spacing: 0.5px;
+  }
+
+  .sidebar-section {
+    padding: 16px 12px 8px;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text3);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 12px;
+    margin: 0 8px;
+    border-radius: 8px;
+    cursor: pointer;
+    color: var(--text2);
+    font-size: 13.5px;
+    font-weight: 400;
+    transition: all 0.15s;
+    border: none;
+    background: none;
+    width: calc(100% - 16px);
+    text-align: left;
+  }
+
+  .nav-item:hover { background: var(--bg3); color: var(--text); }
+  .nav-item.active { background: var(--accent-glow); color: var(--accent2); }
+
+  .nav-icon {
+    width: 18px;
+    height: 18px;
+    opacity: 0.7;
+    flex-shrink: 0;
+  }
+
+  .nav-item.active .nav-icon { opacity: 1; }
+
+  .client-list {
+    padding: 8px;
+    flex: 1;
+    overflow-y: auto;
+  }
+
+  .client-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .client-item:hover { background: var(--bg3); }
+  .client-item.active { background: var(--accent-glow); }
+
+  .avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--display);
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--accent2);
+    flex-shrink: 0;
+  }
+
+  .client-info { flex: 1; min-width: 0; }
+  .client-name { font-size: 13px; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .client-meta { font-size: 11px; color: var(--text3); font-family: var(--mono); }
+
+  .status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--green);
+    flex-shrink: 0;
+  }
+
+  /* MAIN */
+  .main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .topbar {
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+
+  .topbar-title {
+    font-family: var(--display);
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .topbar-sub { font-size: 12px; color: var(--text3); margin-top: 1px; font-family: var(--mono); }
+
+  .topbar-actions { display: flex; gap: 8px; align-items: center; }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-family: var(--mono);
+    font-weight: 500;
+  }
+
+  .badge-green { background: var(--green-bg); color: var(--green); }
+  .badge-amber { background: var(--amber-bg); color: var(--amber); }
+  .badge-red { background: var(--red-bg); color: var(--red); }
+  .badge-purple { background: var(--accent-glow); color: var(--accent2); }
+
+  .btn {
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid var(--border2);
+    font-family: var(--sans);
+    transition: all 0.15s;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+  }
+
+  .btn-primary:hover { background: var(--accent2); border-color: var(--accent2); }
+  .btn-ghost { background: transparent; color: var(--text2); }
+  .btn-ghost:hover { background: var(--bg3); color: var(--text); }
+
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* CONTENT */
+  .content { flex: 1; overflow-y: auto; padding: 24px 28px; }
+
+  /* STAT CARDS */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .stat-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+  }
+
+  .stat-label {
+    font-size: 11px;
+    color: var(--text3);
+    font-family: var(--mono);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+  }
+
+  .stat-value {
+    font-family: var(--display);
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+
+  .stat-delta {
+    font-size: 12px;
+    font-family: var(--mono);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .delta-up { color: var(--green); }
+  .delta-down { color: var(--red); }
+  .delta-neutral { color: var(--text3); }
+
+  /* PANELS */
+  .panels-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .panel {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .panel-header {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .panel-title {
+    font-family: var(--display);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: 0.2px;
+  }
+
+  .panel-body { padding: 16px 18px; }
+
+  /* EXERCISE ROWS */
+  .exercise-row {
+    display: flex;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    gap: 12px;
+  }
+
+  .exercise-row:last-child { border-bottom: none; }
+
+  .ex-name {
+    flex: 1;
+    font-size: 13px;
+    color: var(--text);
+    font-weight: 400;
+  }
+
+  .ex-rm {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--text2);
+    min-width: 60px;
+    text-align: right;
+  }
+
+  .ex-trend {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    min-width: 70px;
+    justify-content: flex-end;
+  }
+
+  .trend-bar {
+    display: flex;
+    gap: 2px;
+    align-items: flex-end;
+  }
+
+  .bar-seg {
+    width: 4px;
+    border-radius: 2px;
+    background: var(--text3);
+  }
+
+  /* WEEK BARS */
+  .week-bars { display: flex; gap: 4px; align-items: flex-end; height: 48px; margin-top: 8px; }
+
+  .week-bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+
+  .week-bar {
+    width: 100%;
+    border-radius: 3px 3px 0 0;
+    background: var(--accent);
+    opacity: 0.6;
+    transition: opacity 0.15s;
+    cursor: pointer;
+    position: relative;
+  }
+
+  .week-bar:hover { opacity: 1; }
+  .week-bar.active { opacity: 1; }
+
+  .week-label { font-size: 10px; color: var(--text3); font-family: var(--mono); }
+
+  /* AI ANALYSIS */
+  .ai-panel {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+
+  .ai-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .ai-title-wrap { display: flex; align-items: center; gap: 10px; }
+
+  .ai-orb {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--accent-glow);
+    border: 1px solid var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .ai-orb svg { width: 14px; height: 14px; }
+
+  .ai-title { font-family: var(--display); font-size: 14px; font-weight: 700; color: var(--text); }
+  .ai-sub { font-size: 11px; color: var(--text3); font-family: var(--mono); }
+
+  .ai-body { padding: 20px; }
+
+  .ai-loading {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--text3);
+    font-family: var(--mono);
+    font-size: 13px;
+    padding: 20px 0;
+  }
+
+  .spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--border2);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    flex-shrink: 0;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .ai-output {
+    display: none;
+  }
+
+  .ai-output.visible { display: block; }
+
+  .ai-section { margin-bottom: 20px; }
+
+  .ai-section-title {
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--accent2);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .ai-section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .ai-text {
+    font-size: 13.5px;
+    line-height: 1.7;
+    color: var(--text2);
+  }
+
+  .ai-text strong { color: var(--text); font-weight: 500; }
+
+  .alert-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 14px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .alert-icon { width: 16px; height: 16px; flex-shrink: 0; margin-top: 1px; }
+
+  .alert-warning { background: var(--amber-bg); color: var(--amber); border: 1px solid rgba(251,191,36,0.2); }
+  .alert-danger { background: var(--red-bg); color: var(--red); border: 1px solid rgba(248,113,113,0.2); }
+  .alert-success { background: var(--green-bg); color: var(--green); border: 1px solid rgba(62,207,142,0.2); }
+
+  .msg-ready {
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: 10px;
+    padding: 14px 16px;
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--text2);
+    font-style: italic;
+    position: relative;
+    margin-top: 8px;
+  }
+
+  .msg-copy {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 4px 8px;
+    font-size: 11px;
+    font-family: var(--mono);
+    color: var(--text3);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .msg-copy:hover { color: var(--text); background: var(--bg3); }
+
+  /* WEEKLY CHECKIN */
+  .checkin-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+
+  .checkin-item {
+    background: var(--bg3);
+    border-radius: 8px;
+    padding: 12px;
+    border: 1px solid var(--border);
+  }
+
+  .checkin-label { font-size: 11px; color: var(--text3); font-family: var(--mono); margin-bottom: 6px; }
+
+  .checkin-bar-track {
+    height: 4px;
+    background: var(--border2);
+    border-radius: 2px;
+    margin-bottom: 4px;
+    overflow: hidden;
+  }
+
+  .checkin-bar-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.6s ease;
+  }
+
+  .checkin-score { font-family: var(--mono); font-size: 13px; color: var(--text); }
+
+  /* INPUT SECTION */
+  .input-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 16px;
+  }
+
+  .ai-prompt-input {
+    flex: 1;
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  .ai-prompt-input:focus { border-color: var(--accent); }
+  .ai-prompt-input::placeholder { color: var(--text3); }
+
+  /* EMPTY STATE */
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text3);
+  }
+
+  .empty-state svg { opacity: 0.2; margin-bottom: 16px; }
+  .empty-state h3 { font-family: var(--display); font-size: 16px; color: var(--text2); margin-bottom: 8px; }
+  .empty-state p { font-size: 13px; line-height: 1.5; }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+  /* TABS */
+  .tabs { display: flex; gap: 4px; padding: 4px; background: var(--bg3); border-radius: 10px; margin-bottom: 20px; }
+
+  .tab {
+    flex: 1;
+    padding: 8px;
+    border-radius: 7px;
+    border: none;
+    background: transparent;
+    color: var(--text3);
+    font-family: var(--sans);
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .tab.active { background: var(--card); color: var(--text); }
+
+  /* TOOLTIP */
+  .tooltip-wrap { position: relative; display: inline-flex; }
+
+  .tooltip {
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--bg2);
+    border: 1px solid var(--border2);
+    border-radius: 6px;
+    padding: 5px 9px;
+    font-size: 11px;
+    font-family: var(--mono);
+    white-space: nowrap;
+    color: var(--text);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s;
+    z-index: 100;
+  }
+
+  .tooltip-wrap:hover .tooltip { opacity: 1; }
+
+  @media (max-width: 900px) {
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .panels-grid { grid-template-columns: 1fr; }
+    .checkin-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-mark">FitCoach<span>AI</span></div>
+      <div class="logo-sub">v1.0 — panel análisis</div>
+    </div>
+
+    <div style="padding: 12px 8px 4px;">
+      <button class="nav-item active" onclick="setView('dashboard')">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        Dashboard
+      </button>
+      <button class="nav-item" onclick="setView('analysis')">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z"/><path d="M12 8v4l3 3"/></svg>
+        Análisis IA
+      </button>
+      <button class="nav-item" onclick="setView('progress')">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        Progresión
+      </button>
+    </div>
+
+    <div class="sidebar-section">Clientes activos</div>
+
+    <div class="client-list" id="clientList">
+      <!-- populated by JS -->
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div>
+        <div class="topbar-title" id="topbarTitle">Juan Pérez</div>
+        <div class="topbar-sub" id="topbarSub">Bloque: Hipertrofia · Semana 2 de 4</div>
+      </div>
+      <div class="topbar-actions">
+        <span class="badge badge-green" id="statusBadge">● Progresando</span>
+        <button class="btn btn-ghost btn-sm" onclick="abrirEditorPerfil()" style="font-size:12px;padding:7px 12px;">
+          👤 Perfil
+        </button>
+        <button class="btn btn-ghost btn-sm" onclick="recargarCliente()" style="font-size:12px;padding:7px 12px;">
+          ↻ Actualizar
+        </button>
+        <button class="btn btn-primary" id="analyzeBtn" onclick="runAnalysis()">
+          Analizar con IA
+        </button>
+      </div>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="content" id="mainContent">
+      <!-- DASHBOARD VIEW -->
+      <div id="view-dashboard">
+
+        <!-- STATS -->
+        <div class="stats-grid" id="statsGrid"></div>
+
+        <!-- PANELS ROW -->
+        <div class="panels-grid">
+
+          <!-- EJERCICIOS Y 1RM -->
+          <div class="panel">
+            <div class="panel-header">
+              <span class="panel-title">Progresión 1RM estimado</span>
+              <span class="badge badge-purple">Semana 2</span>
+            </div>
+            <div class="panel-body" id="rmPanel"></div>
+          </div>
+
+          <!-- VOLUMEN SEMANAL -->
+          <div class="panel">
+            <div class="panel-header">
+              <span class="panel-title">Volumen semanal total</span>
+              <span class="badge badge-green" id="volBadge">+12%</span>
+            </div>
+            <div class="panel-body" id="volPanel"></div>
+          </div>
+
+        </div>
+
+        <!-- CHECK-IN SEMANAL -->
+        <div class="panel" style="margin-bottom:20px;">
+          <div class="panel-header">
+            <span class="panel-title">Check-in semanal del cliente</span>
+            <span class="badge badge-amber" id="checkinDate">Sem. 20 mayo 2026</span>
+          </div>
+          <div class="panel-body">
+            <div class="checkin-grid" id="checkinGrid"></div>
+          </div>
+        </div>
+
+        <!-- AI PANEL -->
+        <div class="ai-panel" id="aiPanel">
+          <div class="ai-header">
+            <div class="ai-title-wrap">
+              <div class="ai-orb">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#a394ff" stroke-width="2"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><path d="M12 8v4l3 3"/></svg>
+              </div>
+              <div>
+                <div class="ai-title">Análisis IA</div>
+                <div class="ai-sub" id="aiTimestamp">Pulsa "Analizar con IA" para generar</div>
+              </div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;" id="aiActions"></div>
+          </div>
+          <div class="ai-body">
+            <div id="aiEmpty" class="empty-state" style="padding:40px 20px;">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+              <h3>Sin análisis todavía</h3>
+              <p>Pulsa el botón "Analizar con IA" para que el sistema procese el histórico de entrenamiento y el check-in semanal de este cliente.</p>
+            </div>
+            <div class="ai-loading" id="aiLoading" style="display:none;">
+              <div class="spinner"></div>
+              <span id="loadingText">Procesando datos de entrenamiento...</span>
+            </div>
+            <div class="ai-output" id="aiOutput"></div>
+
+            <!-- PROMPT LIBRE -->
+            <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);">
+              <div style="font-size:11px;color:var(--text3);font-family:var(--mono);margin-bottom:8px;letter-spacing:0.5px;">PREGUNTA LIBRE AL ASISTENTE</div>
+              <div class="input-row">
+                <input class="ai-prompt-input" id="freePrompt" placeholder="ej: ¿Debería hacer deload esta semana? ¿Qué ejercicio tiene más estancamiento?" />
+                <button class="btn btn-primary" onclick="runFreePrompt()">Preguntar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ANALYSIS VIEW -->
+      <div id="view-analysis" style="display:none;">
+        <div style="font-family:var(--display);font-size:20px;font-weight:700;margin-bottom:20px;">Análisis detallado por ejercicio</div>
+        <div id="exerciseDetailGrid"></div>
+      </div>
+
+      <!-- PROGRESS VIEW -->
+      <div id="view-progress" style="display:none;">
+        <div style="font-family:var(--display);font-size:20px;font-weight:700;margin-bottom:20px;">Historial completo</div>
+        <div id="historyTable"></div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- PERFIL MODAL -->
+<div id="perfilModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:1000;align-items:center;justify-content:center;">
+  <div style="background:var(--card);border:1px solid var(--border2);border-radius:16px;padding:28px;width:560px;max-width:90vw;max-height:90vh;overflow-y:auto;">
+    <div style="font-family:var(--display);font-size:18px;font-weight:700;margin-bottom:4px;">Perfil del cliente</div>
+    <div style="font-size:13px;color:var(--text3);margin-bottom:20px;" id="perfilNombre">Cliente</div>
+
+    <div style="margin-bottom:14px;">
+      <label style="font-size:12px;color:var(--text3);font-family:var(--mono);display:block;margin-bottom:6px;">OBJETIVO PRINCIPAL</label>
+      <textarea id="perfilObjetivo" style="width:100%;height:60px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--sans);font-size:13px;outline:none;resize:none;" placeholder="Ej: Hipertrofia general con énfasis en parte superior. Ganar 3-4kg de masa magra en 16 semanas."></textarea>
+    </div>
+
+    <div style="margin-bottom:14px;">
+      <label style="font-size:12px;color:var(--text3);font-family:var(--mono);display:block;margin-bottom:6px;">PUNTOS DÉBILES MUSCULARES</label>
+      <textarea id="perfilPuntosDebiles" style="width:100%;height:60px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--sans);font-size:13px;outline:none;resize:none;" placeholder="Ej: Espalda media, gemelos, hombro posterior. El cliente tiene tendencia a sobrecompensar con pecho."></textarea>
+    </div>
+
+    <div style="margin-bottom:20px;">
+      <label style="font-size:12px;color:var(--text3);font-family:var(--mono);display:block;margin-bottom:6px;">NOTAS DEL ENTRENADOR (lesiones previas, particularidades)</label>
+      <textarea id="perfilNotas" style="width:100%;height:80px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--sans);font-size:13px;outline:none;resize:none;" placeholder="Ej: Lesión leve en hombro derecho en 2024. Evitar press militar con barra. Buen movilidad de cadera. Le cuesta progresar en piernas."></textarea>
+    </div>
+
+    <div style="display:flex;gap:8px;justify-content:flex-end;">
+      <button class="btn btn-ghost" onclick="document.getElementById('perfilModal').style.display='none'">Cancelar</button>
+      <button class="btn btn-primary" onclick="guardarPerfilModal()">Guardar perfil</button>
+    </div>
+  </div>
+</div>
+
+<!-- IMPORT MODAL -->
+<div id="importModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:1000;align-items:center;justify-content:center;">
+  <div style="background:var(--card);border:1px solid var(--border2);border-radius:16px;padding:28px;width:480px;max-width:90vw;">
+    <div style="font-family:var(--display);font-size:18px;font-weight:700;margin-bottom:6px;">Importar datos del cliente</div>
+    <div style="font-size:13px;color:var(--text3);margin-bottom:20px;">Pega aquí los datos copiados de tu Google Sheet (histórico de entrenos y check-in semanal)</div>
+
+    <div style="margin-bottom:14px;">
+      <label style="font-size:12px;color:var(--text3);font-family:var(--mono);display:block;margin-bottom:6px;">NOMBRE DEL CLIENTE</label>
+      <input id="importName" class="ai-prompt-input" style="width:100%;" placeholder="ej: María García" />
+    </div>
+
+    <div style="margin-bottom:14px;">
+      <label style="font-size:12px;color:var(--text3);font-family:var(--mono);display:block;margin-bottom:6px;">DATOS DE ENTRENAMIENTO (CSV o texto)</label>
+      <textarea id="importData" style="width:100%;height:120px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--mono);font-size:12px;outline:none;resize:none;" placeholder="Pega aquí los datos del histórico..."></textarea>
+    </div>
+
+    <div style="margin-bottom:20px;">
+      <label style="font-size:12px;color:var(--text3);font-family:var(--mono);display:block;margin-bottom:6px;">CHECK-IN SEMANAL</label>
+      <textarea id="importCheckin" style="width:100%;height:80px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--mono);font-size:12px;outline:none;resize:none;" placeholder="Pega aquí el check-in semanal..."></textarea>
+    </div>
+
+    <div style="display:flex;gap:8px;justify-content:flex-end;">
+      <button class="btn btn-ghost" onclick="document.getElementById('importModal').style.display='none'">Cancelar</button>
+      <button class="btn btn-primary" onclick="importData()">Importar cliente</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ==========================================
+// CONFIGURACIÓN — URL de tu Google Apps Script
+// ==========================================
+const SHEETS_URL = "https://script.google.com/macros/s/AKfycbzhy7NUiu8IqOxdNM520nc3_eseMmuDw0-i7JhJ75r2giU6hDHArnKwKdV7pXjuKzNWDQ/exec";
+
+// ==========================================
+// ESTADO GLOBAL
+// ==========================================
+let DB = { clientes: [] };
+let clienteActual = null;
+let currentView = 'dashboard';
+
+// ==========================================
+// INIT — carga clientes desde Sheets
+// ==========================================
+async function init() {
+  mostrarCargando(true);
+  try {
+    const data = await llamarSheets("clientes");
+    if (data.error) throw new Error(data.error);
+
+    DB.clientes = data.clientes.map((c, i) => ({
+      id: i + 1,
+      nombre: c.nombre,
+      iniciales: c.iniciales,
+      bloque: "Hipertrofia",
+      semana_actual: 1,
+      semanas_total: 4,
+      estado: "activo",
+      historico: [],
+      checkin: null,
+      cargado: false
+    }));
+
+    if (DB.clientes.length === 0) {
+      mostrarCargando(false);
+      document.getElementById('clientList').innerHTML = `
+        <div style="padding:16px;font-size:12px;color:var(--text3);text-align:center;line-height:1.5;">
+          No hay clientes en el histórico todavía.<br>Los clientes aparecen aquí cuando rellenan su primera sesión.
+        </div>`;
+      return;
+    }
+
+    renderClientList();
+    mostrarCargando(false);
+    await selectCliente(0);
+
+  } catch(err) {
+    mostrarCargando(false);
+    document.getElementById('clientList').innerHTML = `
+      <div style="padding:16px;font-size:12px;color:var(--red);text-align:center;line-height:1.6;">
+        ⚠️ Error al conectar con Google Sheets.<br><span style="color:var(--text3)">${err.message}</span>
+      </div>`;
+  }
+}
+
+// ==========================================
+// LLAMADA AL SCRIPT PUENTE
+// ==========================================
+async function llamarSheets(action, params = {}) {
+  const url = new URL(SHEETS_URL);
+  url.searchParams.set("action", action);
+  Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
+
+  // Apps Script necesita seguir redirecciones — usamos no-cors solo como fallback
+  const resp = await fetch(url.toString(), { redirect: "follow" });
+  if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+  return await resp.json();
+}
+
+// ==========================================
+// CARGANDO SIDEBAR
+// ==========================================
+function mostrarCargando(estado) {
+  const el = document.getElementById('clientList');
+  if (estado) {
+    el.innerHTML = `
+      <div style="padding:20px;display:flex;align-items:center;gap:10px;color:var(--text3);font-size:12px;font-family:var(--mono);">
+        <div class="spinner" style="width:14px;height:14px;border-width:1.5px;"></div>
+        Cargando clientes...
+      </div>`;
+  }
+}
+
+// ==========================================
+// RENDER LISTA DE CLIENTES
+// ==========================================
+function renderClientList() {
+  const el = document.getElementById('clientList');
+  el.innerHTML = DB.clientes.map((c, i) => `
+    <div class="client-item" onclick="selectCliente(${i})" id="clientItem-${i}">
+      <div class="avatar">${c.iniciales}</div>
+      <div class="client-info">
+        <div class="client-name">${c.nombre}</div>
+        <div class="client-meta">${c.bloque} · S${c.semana_actual}</div>
+      </div>
+      <div class="status-dot"></div>
+    </div>
+  `).join('');
+}
+
+// ==========================================
+// SELECCIONAR CLIENTE — carga datos completos
+// ==========================================
+async function selectCliente(idx) {
+  document.querySelectorAll('.client-item').forEach((el, i) => {
+    el.classList.toggle('active', i === idx);
+  });
+
+  clienteActual = DB.clientes[idx];
+  resetAI();
+
+  document.getElementById('topbarTitle').textContent = clienteActual.nombre;
+  document.getElementById('topbarSub').textContent = `Bloque: ${clienteActual.bloque} · Cargando datos...`;
+  document.getElementById('statsGrid').innerHTML = skeletonStats();
+  document.getElementById('rmPanel').innerHTML = skeletonList();
+  document.getElementById('volPanel').innerHTML = skeletonList();
+  document.getElementById('checkinGrid').innerHTML = '';
+
+  // Si ya está cargado, solo renderizar
+  if (clienteActual.cargado) {
+    renderDashboard();
+    return;
+  }
+
+  try {
+    const data = await llamarSheets("completo", {
+      cliente: clienteActual.nombre.toLowerCase()
+    });
+
+    if (data.error) throw new Error(data.error);
+
+    // Actualizar datos en DB
+    // Normalizar nombres de ejercicio/semana/dia a formato legible
+    clienteActual.historico = (data.historico || []).map(r => ({
+      ...r,
+      ejercicio: r.ejercicio ? r.ejercicio.trim() : r.ejercicio,
+      semana: r.semana ? r.semana.trim() : r.semana,
+      dia: r.dia ? r.dia.trim() : r.dia
+    }));
+    clienteActual.semana_actual = data.semana_actual || 1;
+    clienteActual.tipo = data.tipo || "basico";
+    clienteActual.notas_vip = data.notas_vip || [];
+
+    // Último check-in disponible
+    clienteActual.checkin = normalizarCheckin(data.ultimo_checkin);
+    clienteActual.checkins_todos = data.checkins || {};
+    clienteActual.cargado = true;
+
+    // Actualizar meta en sidebar
+    document.getElementById(`clientItem-${idx}`).querySelector('.client-meta').textContent =
+      `${clienteActual.bloque} · S${clienteActual.semana_actual}`;
+
+    document.getElementById('topbarSub').textContent =
+      `Bloque: ${clienteActual.bloque} · Semana ${clienteActual.semana_actual} · ${etiquetaTipo(clienteActual.tipo)}`;
+
+    renderDashboard();
+
+  } catch(err) {
+    document.getElementById('statsGrid').innerHTML = `
+      <div style="grid-column:1/-1;padding:16px;color:var(--red);font-size:13px;">
+        ⚠️ Error al cargar datos: ${err.message}
+      </div>`;
+  }
+}
+
+// ==========================================
+// NORMALIZAR CHECK-IN (adapta los campos del formulario)
+// ==========================================
+function normalizarCheckin(raw) {
+  if (!raw) return null;
+  return {
+    fecha:               raw.fecha || "-",
+    fatiga_muscular:     raw.fatiga || 3,
+    calidad_sueno:       raw.sueno || 3,
+    molestia:            raw.molestia || "No",
+    donde_molestia:      raw.donde_molestia || null,
+    entrenos_completados: raw.entrenos || 0,
+    // Campos mensuales (pueden ser null en check-in semanal)
+    peso:                raw.peso || null,
+    cintura:             raw.cintura || null,
+    cadera:              raw.cadera || null,
+    pecho:               raw.pecho || null,
+    biceps:              raw.biceps || null,
+    muslo:               raw.muslo || null,
+    comentario:          raw.comentario || null
+  };
+}
+
+function etiquetaTipo(tipo) {
+  if (tipo === "vip_semanal") return "VIP Semanal";
+  if (tipo === "vip_mensual") return "VIP Mensual";
+  return "Mensual";
+}
+
+// ==========================================
+// SKELETONS DE CARGA
+// ==========================================
+function skeletonStats() {
+  return Array(4).fill(0).map(() => `
+    <div class="stat-card">
+      <div style="height:10px;background:var(--border2);border-radius:4px;width:60%;margin-bottom:12px;"></div>
+      <div style="height:26px;background:var(--border2);border-radius:4px;width:40%;margin-bottom:8px;"></div>
+      <div style="height:10px;background:var(--border);border-radius:4px;width:70%;"></div>
+    </div>`).join('');
+}
+
+function skeletonList() {
+  return Array(4).fill(0).map(() => `
+    <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);">
+      <div style="flex:1;height:12px;background:var(--border2);border-radius:4px;"></div>
+      <div style="width:50px;height:12px;background:var(--border);border-radius:4px;"></div>
+    </div>`).join('');
+}
+
+function setView(v) {
+  currentView = v;
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  ['dashboard','analysis','progress'].forEach(view => {
+    const el = document.getElementById('view-' + view);
+    if (el) el.style.display = view === v ? 'block' : 'none';
+  });
+  if (v === 'analysis') renderExerciseDetail();
+  if (v === 'progress') renderHistory();
+}
+
+function setView(v) {
+  currentView = v;
+  document.querySelectorAll('.nav-item').forEach((el, i) => {
+    el.classList.remove('active');
+  });
+  event.currentTarget.classList.add('active');
+  ['dashboard','analysis','progress'].forEach(view => {
+    const el = document.getElementById('view-' + view);
+    if (el) el.style.display = view === v ? 'block' : 'none';
+  });
+  if (v === 'analysis') renderExerciseDetail();
+  if (v === 'progress') renderHistory();
+}
+
+// ==========================================
+// DASHBOARD
+// ==========================================
+function renderDashboard() {
+  renderStats();
+  renderRM();
+  renderVolume();
+  renderCheckin();
+}
+
+function renderStats() {
+  const hist = clienteActual.historico;
+
+  if (!hist || hist.length === 0) {
+    document.getElementById('statsGrid').innerHTML = `
+      <div style="grid-column:1/-1;padding:16px;color:var(--text3);font-size:13px;text-align:center;">
+        Sin datos de entrenamiento todavía para este cliente.
+      </div>`;
+    return;
+  }
+
+  const semanas = [...new Set(hist.map(r => r.semana))].sort();
+  const semanaActual = semanas[semanas.length - 1] || "Semana 1";
+  const semanaPrev  = semanas.length > 1 ? semanas[semanas.length - 2] : null;
+
+  const volActual = hist.filter(r => r.semana === semanaActual).reduce((s, r) => s + (r.volumen || 0), 0);
+  const volPrev   = semanaPrev ? hist.filter(r => r.semana === semanaPrev).reduce((s, r) => s + (r.volumen || 0), 0) : 0;
+  const deltaVol  = volPrev ? Math.round(((volActual - volPrev) / volPrev) * 100) : 0;
+
+  const rmsActual = hist.filter(r => r.semana === semanaActual).map(r => r.rm || 0);
+  const rmTop     = rmsActual.length ? Math.max(...rmsActual) : 0;
+  const rmsPrev   = semanaPrev ? hist.filter(r => r.semana === semanaPrev).map(r => r.rm || 0) : [];
+  const rmTopPrev = rmsPrev.length ? Math.max(...rmsPrev) : 0;
+
+  const dias     = new Set(hist.filter(r => r.semana === semanaActual).map(r => r.dia)).size;
+  const c        = clienteActual.checkin;
+
+  // Bienestar: solo si hay checkin, si no mostrar guión
+  let bienestarHTML = '<div class="stat-delta delta-neutral">— sin check-in</div>';
+  if (c) {
+    const bScore = Math.round((((c.fatiga_muscular <= 2 ? 5 : c.fatiga_muscular === 3 ? 3 : 1) +
+      (c.calidad_sueno || 3) ) / 10) * 100);
+    bienestarHTML = `<div class="stat-delta delta-neutral">— semana ${semanas.length}</div>`;
+  }
+
+  const stats = [
+    {
+      label: "Volumen total (semana actual)",
+      value: volActual.toLocaleString(), unit: "kg",
+      delta: deltaVol, suffix: "%", show_delta: semanaPrev !== null
+    },
+    {
+      label: "1RM más alto",
+      value: rmTop, unit: "kg",
+      delta: rmTop - rmTopPrev, suffix: "kg", show_delta: rmTopPrev > 0
+    },
+    {
+      label: "Días entrenados",
+      value: dias, unit: `esta semana`,
+      delta: null
+    },
+    {
+      label: "Semanas registradas",
+      value: semanas.length, unit: "semanas",
+      delta: null
+    }
+  ];
+
+  document.getElementById('statsGrid').innerHTML = stats.map(s => `
+    <div class="stat-card">
+      <div class="stat-label">${s.label}</div>
+      <div class="stat-value">${s.value}<span style="font-size:14px;color:var(--text3);font-weight:400;"> ${s.unit}</span></div>
+      ${s.show_delta && s.delta !== null ? `
+        <div class="stat-delta ${s.delta > 0 ? 'delta-up' : s.delta < 0 ? 'delta-down' : 'delta-neutral'}">
+          ${s.delta > 0 ? '↑' : s.delta < 0 ? '↓' : '→'} ${Math.abs(s.delta)}${s.suffix}
+          <span style="color:var(--text3)"> vs semana anterior</span>
+        </div>
+      ` : `<div class="stat-delta delta-neutral">— semana ${semanas.length}</div>`}
+    </div>
+  `).join('');
+}
+
+function getLatestRM(ejercicio) {
+  const rows = clienteActual.historico.filter(r => r.ejercicio === ejercicio).sort((a, b) => a.semana.localeCompare(b.semana));
+  return rows.length ? rows[rows.length - 1].rm : null;
+}
+
+function getPrevRM(ejercicio) {
+  const semanas = [...new Set(clienteActual.historico.filter(r => r.ejercicio === ejercicio).map(r => r.semana))].sort();
+  if (semanas.length < 2) return null;
+  const prev = clienteActual.historico.filter(r => r.ejercicio === ejercicio && r.semana === semanas[semanas.length - 2]);
+  return prev.length ? prev[0].rm : null;
+}
+
+function renderRM() {
+  const hist = clienteActual.historico;
+  if (!hist || hist.length === 0) {
+    document.getElementById('rmPanel').innerHTML = '<p style="color:var(--text3);font-size:13px;">Sin datos todavía.</p>';
+    return;
+  }
+
+  const ejercicios = [...new Set(hist.map(r => r.ejercicio))].slice(0, 6);
+  const semanas = [...new Set(hist.map(r => r.semana))].sort();
+  document.querySelector('.badge-purple').textContent = semanas[semanas.length - 1] || 'Semana 1';
+
+  const html = ejercicios.map(ej => {
+    const rm = getLatestRM(ej);
+    const prev = getPrevRM(ej);
+    if (!rm) return '';
+    const delta = prev ? rm - prev : 0;
+    const color = delta > 0 ? 'var(--green)' : delta < 0 ? 'var(--red)' : 'var(--text3)';
+    const label = ej.length > 24 ? ej.substring(0, 24) + '…' : ej;
+    const barH = [prev ? Math.round((prev / rm) * 32) : 20, 32];
+    return `
+      <div class="exercise-row">
+        <span class="ex-name">${label}</span>
+        <div class="trend-bar">
+          ${barH.map((h, i) => `<div class="bar-seg" style="height:${h}px;background:${i === 1 ? 'var(--accent)' : 'var(--text3)'};opacity:${i === 1 ? 1 : 0.4}"></div>`).join('')}
+        </div>
+        <span class="ex-rm">${rm} kg</span>
+        <span style="font-family:var(--mono);font-size:12px;color:${color};min-width:44px;text-align:right;">${delta !== 0 ? (delta > 0 ? '+' : '') + delta + 'kg' : '—'}</span>
+      </div>`;
+  }).join('');
+  document.getElementById('rmPanel').innerHTML = html || '<p style="color:var(--text3);font-size:13px;">Sin datos suficientes.</p>';
+}
+
+function renderVolume() {
+  const hist = clienteActual.historico;
+  if (!hist || hist.length === 0) {
+    document.getElementById('volPanel').innerHTML = '<p style="color:var(--text3);font-size:13px;">Sin datos todavía.</p>';
+    return;
+  }
+  const semanas = [...new Set(hist.map(r => r.semana))].sort();
+  const vols = semanas.map(s => hist.filter(r => r.semana === s).reduce((acc, r) => acc + (r.volumen || 0), 0));
+  const maxVol = Math.max(...vols) || 1;
+
+  document.getElementById('volBadge').textContent = vols.length > 1
+    ? (vols[vols.length-1] >= vols[vols.length-2] ? '+' : '') + Math.round(((vols[vols.length-1] - vols[vols.length-2]) / vols[vols.length-2]) * 100) + '%'
+    : 'S1';
+
+  document.getElementById('volPanel').innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:0;">
+      <div class="week-bars">
+        ${semanas.map((s, i) => `
+          <div class="week-bar-wrap">
+            <div class="week-bar ${i === semanas.length - 1 ? 'active' : ''}" style="height:${Math.max(8, Math.round((vols[i] / maxVol) * 48))}px;" title="${vols[i].toLocaleString()} kg"></div>
+          </div>`).join('')}
+        ${[...Array(Math.max(0, 4 - semanas.length))].map(() => `
+          <div class="week-bar-wrap">
+            <div style="width:100%;height:8px;background:var(--border);border-radius:3px 3px 0 0;opacity:0.3;"></div>
+          </div>`).join('')}
+      </div>
+      <div style="display:flex;gap:4px;margin-top:4px;">
+        ${semanas.map(s => `
+          <div class="week-bar-wrap">
+            <div class="week-label">${s.replace('Semana ', 'S')}</div>
+          </div>`).join('')}
+        ${[...Array(Math.max(0, 4 - semanas.length))].map((_, i) => `
+          <div class="week-bar-wrap">
+            <div class="week-label" style="opacity:0.3">S${semanas.length + i + 1}</div>
+          </div>`).join('')}
+      </div>
+    </div>
+    <div style="margin-top:16px;display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+      ${semanas.map((s, i) => `
+        <div style="background:var(--bg3);border-radius:6px;padding:8px 10px;border:1px solid var(--border);">
+          <div style="font-size:10px;color:var(--text3);font-family:var(--mono);">${s}</div>
+          <div style="font-size:15px;font-weight:600;font-family:var(--display);color:var(--text);margin-top:2px;">${vols[i].toLocaleString()} <span style="font-size:11px;color:var(--text3);font-weight:400;">kg</span></div>
+        </div>`).join('')}
+    </div>`;
+}
+
+function renderCheckin() {
+  const c = clienteActual.checkin;
+
+  if (!c) {
+    document.getElementById('checkinGrid').innerHTML = `
+      <div style="grid-column:1/-1;padding:16px;color:var(--text3);font-size:13px;text-align:center;">
+        Sin check-in registrado todavía para este cliente.
+      </div>`;
+    document.getElementById('checkinDate').textContent = 'Sin datos';
+    return;
+  }
+
+  document.getElementById('checkinDate').textContent = c.fecha || '-';
+
+  const fatiga = c.fatiga_muscular || 3;
+  const sueno  = c.calidad_sueno || 3;
+
+  // Molestia: normalizar a texto legible
+  const molestiaVal = (c.molestia || "").toString().toLowerCase();
+  const tieneMolestia = molestiaVal.includes("sí") || molestiaVal.includes("si") || molestiaVal.includes("dolor") || molestiaVal.includes("leve");
+  const molestiaScore = tieneMolestia ? 1 : 5;
+  const molestiaColor = tieneMolestia ? 'var(--red)' : 'var(--green)';
+  const molestiaTexto = tieneMolestia ? (c.donde_molestia || "Sí") : "No";
+
+  const entrenos = c.entrenos_completados || 0;
+  const entrenosColor = entrenos >= 3 ? 'var(--green)' : entrenos >= 2 ? 'var(--amber)' : 'var(--red)';
+
+  const metrics = [
+    {
+      label: "FATIGA MUSCULAR",
+      val: fatiga, max: 5,
+      color: fatiga <= 2 ? 'var(--green)' : fatiga === 3 ? 'var(--amber)' : 'var(--red)',
+      display: `${fatiga}/5`
+    },
+    {
+      label: "CALIDAD SUEÑO",
+      val: sueno, max: 5,
+      color: sueno >= 4 ? 'var(--green)' : sueno === 3 ? 'var(--amber)' : 'var(--red)',
+      display: `${sueno}/5`
+    },
+    {
+      label: "MOLESTIAS",
+      val: molestiaScore, max: 5,
+      color: molestiaColor,
+      display: molestiaTexto.length > 12 ? molestiaTexto.substring(0, 12) + '…' : molestiaTexto
+    },
+    {
+      label: "ENTRENOS",
+      val: entrenos, max: 5,
+      color: entrenosColor,
+      display: `${entrenos} / sem.`
+    }
+  ];
+
+  // Si tiene datos de medidas (check-in mensual)
+  if (c.peso) {
+    metrics.push({
+      label: "PESO ACTUAL",
+      val: 5, max: 5,
+      color: 'var(--accent2)',
+      display: `${c.peso} kg`
+    });
+  }
+
+  let html = metrics.map(m => `
+    <div class="checkin-item">
+      <div class="checkin-label">${m.label}</div>
+      <div class="checkin-bar-track">
+        <div class="checkin-bar-fill" style="width:${(m.val / m.max) * 100}%;background:${m.color};"></div>
+      </div>
+      <div class="checkin-score" style="color:${m.color}">${m.display}</div>
+    </div>
+  `).join('');
+
+  // Si tiene molestia con descripción, mostrarla
+  if (tieneMolestia && c.donde_molestia) {
+    html += `
+      <div style="grid-column:1/-1;margin-top:4px;padding:10px 12px;background:var(--red-bg);border:1px solid rgba(248,113,113,0.2);border-radius:8px;font-size:12px;color:var(--red);">
+        📍 ${c.donde_molestia}
+      </div>`;
+  }
+
+  document.getElementById('checkinGrid').innerHTML = html;
+}
+
+// ==========================================
+// AI ANALYSIS
+// ==========================================
+
+// Mapeo de ejercicios a grupos musculares (ampliar según necesidad)
+const GRUPOS_MUSCULARES = {
+  "PRESS BANCA": "pecho",
+  "PRESS INCLINADO": "pecho",
+  "APERTURAS": "pecho",
+  "PECK DECK": "pecho",
+  "FONDOS": "pecho",
+  "PRESS MILITAR": "hombro",
+  "LATERALES": "hombro",
+  "ELEVACIONES LATERALES": "hombro",
+  "PAJARO": "hombro",
+  "FACE PULL": "hombro",
+  "REMO": "espalda",
+  "DOMINADAS": "espalda",
+  "JALON": "espalda",
+  "PULLOVER": "espalda",
+  "PESO MUERTO": "espalda",
+  "HIPERESPALDA": "espalda",
+  "CURL": "biceps",
+  "BICEPS": "biceps",
+  "MARTILLO": "biceps",
+  "TRICEPS": "triceps",
+  "PATADA": "triceps",
+  "EXTENSION TRICEP": "triceps",
+  "FRANCESA": "triceps",
+  "SENTADILLA": "cuadriceps",
+  "PRENSA": "cuadriceps",
+  "EXTENSION DE RODILLA": "cuadriceps",
+  "EXTENSIÓN DE RODILLA": "cuadriceps",
+  "BÚLGARA": "cuadriceps",
+  "BULGARA": "cuadriceps",
+  "HACK": "cuadriceps",
+  "ESTOCADA": "cuadriceps",
+  "ZANCADA": "cuadriceps",
+  "FEMORAL": "femoral",
+  "CURL FEMORAL": "femoral",
+  "RUMANO": "femoral",
+  "GLUTEO": "gluteo",
+  "GLÚTEO": "gluteo",
+  "HIP THRUST": "gluteo",
+  "PUENTE": "gluteo",
+  "ABDUCTOR": "gluteo",
+  "GEMELO": "gemelos",
+  "ELEVACION TALON": "gemelos",
+  "ABDOMINAL": "core",
+  "PLANCHA": "core",
+  "CRUNCH": "core",
+  "RUEDA": "core"
+};
+
+// Rangos óptimos de series semanales por grupo muscular (natural, según Israetel/Schoenfeld)
+const RANGOS_VOLUMEN = {
+  pecho:      { mev: 8,  mav: 12, mrv: 22 },
+  espalda:    { mev: 10, mav: 14, mrv: 25 },
+  hombro:     { mev: 8,  mav: 16, mrv: 26 },
+  biceps:     { mev: 6,  mav: 10, mrv: 20 },
+  triceps:    { mev: 6,  mav: 10, mrv: 18 },
+  cuadriceps: { mev: 8,  mav: 12, mrv: 20 },
+  femoral:    { mev: 6,  mav: 10, mrv: 16 },
+  gluteo:     { mev: 6,  mav: 12, mrv: 16 },
+  gemelos:    { mev: 6,  mav: 10, mrv: 16 },
+  core:       { mev: 0,  mav: 6,  mrv: 25 }
+};
+
+function detectarMusculo(ejercicio) {
+  const ej = ejercicio.toUpperCase();
+  for (const [keyword, musculo] of Object.entries(GRUPOS_MUSCULARES)) {
+    if (ej.includes(keyword)) return musculo;
+  }
+  return "otros";
+}
+
+function calcularVolumenPorMusculo(hist, semana) {
+  const seriesPorMusculo = {};
+  hist.filter(r => r.semana === semana).forEach(r => {
+    const musculo = detectarMusculo(r.ejercicio);
+    seriesPorMusculo[musculo] = (seriesPorMusculo[musculo] || 0) + (r.series || 0);
+  });
+  return seriesPorMusculo;
+}
+
+function calcularTendenciaEjercicios(hist) {
+  // Agrupa por ejercicio y calcula evolución semana a semana
+  const ejercicios = [...new Set(hist.map(r => r.ejercicio))];
+  return ejercicios.map(ej => {
+    const rows = hist.filter(r => r.ejercicio === ej)
+      .sort((a, b) => a.semana.localeCompare(b.semana));
+    const datos = rows.map(r => ({
+      semana: r.semana,
+      peso: r.peso,
+      reps: r.reps,
+      volumen: r.volumen,
+      rm: r.rm
+    }));
+    return { ejercicio: ej, evolucion: datos };
+  });
+}
+
+function buildPrompt(cliente, free = null) {
+  const hist = cliente.historico;
+  const c = cliente.checkin;
+  const perfil = obtenerPerfilCliente(cliente.nombre);
+
+  // Volumen por músculo de cada semana
+  const semanas = [...new Set(hist.map(r => r.semana))].sort();
+  const volumenSemanal = semanas.map(s => {
+    const vol = calcularVolumenPorMusculo(hist, s);
+    const lineas = Object.entries(vol).map(([m, series]) => {
+      const rango = RANGOS_VOLUMEN[m];
+      let estado = "";
+      if (rango) {
+        if (series < rango.mev) estado = ` [BAJO - mínimo recomendado ${rango.mev}]`;
+        else if (series > rango.mrv) estado = ` [EXCESIVO - máximo recomendado ${rango.mrv}]`;
+        else if (series >= rango.mav) estado = ` [ÓPTIMO]`;
+        else estado = ` [SUFICIENTE]`;
+      }
+      return `  ${m}: ${series} series${estado}`;
+    }).join('\n');
+    return `${s}:\n${lineas}`;
+  }).join('\n\n');
+
+  // Tendencias de TODOS los ejercicios
+  const tendencias = calcularTendenciaEjercicios(hist);
+  const tendenciasTexto = tendencias.map(t => {
+    const datos = t.evolucion.map(d =>
+      `${d.semana}: ${d.peso}kg x ${d.reps} reps (1RM est. ${d.rm}kg)`
+    ).join(' → ');
+    return `${t.ejercicio} (${detectarMusculo(t.ejercicio)}): ${datos}`;
+  }).join('\n');
+
+  const resumenCheckin = c ? `
+Fecha: ${c.fecha}
+Fatiga muscular: ${c.fatiga_muscular}/5
+Calidad sueño: ${c.calidad_sueno}/5
+Molestias: ${c.molestia || "No"}${c.donde_molestia ? ' — ' + c.donde_molestia : ''}
+Entrenos completados: ${c.entrenos_completados}
+${c.peso ? 'Peso: ' + c.peso + 'kg' : ''}
+${c.cintura ? 'Cintura: ' + c.cintura + 'cm | Cadera: ' + c.cadera + 'cm | Pecho: ' + c.pecho + 'cm' : ''}
+${c.comentario ? 'Comentario: ' + c.comentario : ''}
+  `.trim() : "Sin check-in registrado.";
+
+  const notas = cliente.notas_vip || [];
+  const resumenNotas = notas.length > 0
+    ? notas.map(n => `[${n.semana} - ${n.dia}] ${n.nota}`).join('\n')
+    : "Sin notas personales registradas.";
+
+  const perfilTexto = `
+Objetivo principal: ${perfil.objetivo || "No especificado"}
+Puntos débiles musculares: ${perfil.puntosDebiles || "No especificados"}
+Tipo de cliente: NATURAL (sin sustancias ergogénicas) — los rangos de volumen aplicados están optimizados para este perfil
+Notas del entrenador: ${perfil.notas || "Ninguna"}
+  `.trim();
+
+  if (free) {
+    return `Eres un entrenador personal experto en hipertrofia y fuerza para atletas naturales. Analiza los datos del cliente ${cliente.nombre} para responder.
+
+PERFIL DEL CLIENTE:
+${perfilTexto}
+
+VOLUMEN SEMANAL POR GRUPO MUSCULAR:
+${volumenSemanal}
+
+TENDENCIAS POR EJERCICIO:
+${tendenciasTexto}
+
+CHECK-IN:
+${resumenCheckin}
+
+NOTAS PERSONALES DEL CLIENTE:
+${resumenNotas}
+
+PREGUNTA DEL ENTRENADOR: ${free}
+
+Responde en español, preciso y profesional. Máximo 200 palabras. Sin saludos ni rodeos.`;
+  }
+
+  return `Eres un entrenador personal experto en hipertrofia para atletas naturales. Tienes un análisis científico riguroso (Schoenfeld, Israetel, Helms). Analiza al cliente ${cliente.nombre} y genera un informe JSON profesional.
+
+PERFIL DEL CLIENTE:
+${perfilTexto}
+
+VOLUMEN SEMANAL POR GRUPO MUSCULAR (series efectivas):
+${volumenSemanal}
+
+Rangos de referencia para atletas naturales:
+- MEV (Minimum Effective Volume) = mínimo para hipertrofia
+- MAV (Maximum Adaptive Volume) = óptimo
+- MRV (Maximum Recoverable Volume) = no exceder
+
+TENDENCIAS POR EJERCICIO (evolución semana a semana):
+${tendenciasTexto}
+
+CHECK-IN:
+${resumenCheckin}
+
+NOTAS PERSONALES DEL CLIENTE (cómo se sintió cada día):
+${resumenNotas}
+
+INSTRUCCIONES:
+1. Analiza CADA ejercicio individualmente, no solo los que progresan
+2. Cruza las notas personales con el rendimiento de ese día específico
+3. Evalúa volumen por músculo según rangos para natural
+4. Presta atención a los puntos débiles del cliente y dale recomendaciones específicas para esos músculos
+5. Detecta estancamientos, regresiones y posible sobreentrenamiento
+6. Sé concreto: nombra ejercicios y números exactos, no generalidades
+
+Genera SOLO este JSON (sin markdown, sin texto extra):
+{
+  "resumen": "3-4 frases con análisis profesional del estado general",
+  "alertas": [
+    {"tipo": "warning|danger|success", "texto": "hallazgo específico con datos concretos"}
+  ],
+  "volumen_musculos": [
+    {"musculo": "nombre", "series_semana": 0, "estado": "bajo|optimo|excesivo", "recomendacion": "qué hacer concretamente"}
+  ],
+  "fatiga": {
+    "nivel": "bajo|moderado|alto|crítico",
+    "score": 0-100,
+    "explicacion": "basada en datos reales — cruza check-in, notas y rendimiento"
+  },
+  "tendencias_ejercicios": [
+    {"ejercicio": "nombre completo", "musculo": "grupo muscular", "tendencia": "subiendo|estable|bajando|estancado", "delta_kg": 0, "analisis": "qué está pasando con este ejercicio"}
+  ],
+  "puntos_debiles_analisis": "Análisis específico de los puntos débiles indicados en el perfil — qué hacer en concreto",
+  "notas_relevantes": "Síntesis de las notas personales del cliente y qué revelan",
+  "recomendaciones": ["5 recomendaciones concretas y accionables para la próxima semana"],
+  "mensaje_cliente": "Mensaje motivador para WhatsApp. 4-5 frases. Tono profesional pero cercano. Primera persona del entrenador. Menciona algo específico que haya hecho bien y algo a mejorar."
+}
+
+Incluye TODOS los ejercicios en tendencias_ejercicios, no solo los más importantes. Solo responde con el JSON.`;
+}
+
+// ==========================================
+// PERFIL DEL CLIENTE (guardado en navegador)
+// ==========================================
+function obtenerPerfilCliente(nombre) {
+  try {
+    const data = JSON.parse(localStorage.getItem('fitcoach_perfiles') || '{}');
+    return data[nombre] || { objetivo: "", puntosDebiles: "", notas: "" };
+  } catch(e) {
+    return { objetivo: "", puntosDebiles: "", notas: "" };
+  }
+}
+
+function guardarPerfilCliente(nombre, perfil) {
+  try {
+    const data = JSON.parse(localStorage.getItem('fitcoach_perfiles') || '{}');
+    data[nombre] = perfil;
+    localStorage.setItem('fitcoach_perfiles', JSON.stringify(data));
+  } catch(e) {
+    console.error('Error guardando perfil:', e);
+  }
+}
+
+function abrirEditorPerfil() {
+  if (!clienteActual) return;
+  const perfil = obtenerPerfilCliente(clienteActual.nombre);
+  document.getElementById('perfilNombre').textContent = clienteActual.nombre;
+  document.getElementById('perfilObjetivo').value = perfil.objetivo || "";
+  document.getElementById('perfilPuntosDebiles').value = perfil.puntosDebiles || "";
+  document.getElementById('perfilNotas').value = perfil.notas || "";
+  document.getElementById('perfilModal').style.display = 'flex';
+}
+
+function guardarPerfilModal() {
+  const perfil = {
+    objetivo: document.getElementById('perfilObjetivo').value.trim(),
+    puntosDebiles: document.getElementById('perfilPuntosDebiles').value.trim(),
+    notas: document.getElementById('perfilNotas').value.trim()
+  };
+  guardarPerfilCliente(clienteActual.nombre, perfil);
+  document.getElementById('perfilModal').style.display = 'none';
+}
+
+async function runAnalysis() {
+  const btn = document.getElementById('analyzeBtn');
+  btn.disabled = true;
+  btn.textContent = 'Analizando...';
+  document.getElementById('aiEmpty').style.display = 'none';
+  document.getElementById('aiOutput').classList.remove('visible');
+  document.getElementById('aiLoading').style.display = 'flex';
+
+  const loadingTexts = [
+    "Procesando histórico de entrenos...",
+    "Calculando tendencias de 1RM...",
+    "Analizando volumen y fatiga...",
+    "Cruzando datos con check-in semanal...",
+    "Generando análisis personalizado..."
+  ];
+  let li = 0;
+  const lt = setInterval(() => {
+    document.getElementById('loadingText').textContent = loadingTexts[li % loadingTexts.length];
+    li++;
+  }, 1200);
+
+  try {
+    const prompt = buildPrompt(clienteActual);
+    const resp = await fetch(SHEETS_URL, {
+      method: "POST",
+      redirect: "follow",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "ia", prompt: prompt })
+    });
+    const data = await resp.json();
+    clearInterval(lt);
+    const raw = (data.content || []).map(b => b.text || '').join('');
+    const clean = raw.replace(/```json|```/g, '').trim();
+    let analysis;
+    try { analysis = JSON.parse(clean); }
+    catch(e) { analysis = null; }
+    document.getElementById('aiLoading').style.display = 'none';
+    if (data.error) {
+      throw new Error(data.error);
+    } else if (analysis) {
+      renderAnalysis(analysis);
+    } else {
+      renderRawAnalysis(raw);
+    }
+  } catch(err) {
+    clearInterval(lt);
+    document.getElementById('aiLoading').style.display = 'none';
+    document.getElementById('aiOutput').innerHTML = `
+      <div class="alert-row alert-danger">
+        <svg class="alert-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        Error al conectar con la IA. Comprueba tu conexión y vuelve a intentarlo.
+      </div>`;
+    document.getElementById('aiOutput').classList.add('visible');
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Actualizar análisis';
+  document.getElementById('aiTimestamp').textContent = 'Actualizado: ' + new Date().toLocaleTimeString('es-ES');
+}
+
+function renderAnalysis(a) {
+  const fatigaColor = { bajo: 'var(--green)', moderado: 'var(--amber)', alto: 'var(--red)', crítico: 'var(--red)' }[a.fatiga ? a.fatiga.nivel : 'moderado'] || 'var(--text2)';
+
+  let html = `
+    <div class="ai-section">
+      <div class="ai-section-title">Resumen profesional</div>
+      <p class="ai-text">${a.resumen || ''}</p>
+    </div>`;
+
+  if (a.alertas && a.alertas.length) {
+    html += `
+    <div class="ai-section">
+      <div class="ai-section-title">Alertas detectadas</div>
+      ${a.alertas.map(al => `
+        <div class="alert-row alert-${al.tipo}">
+          <svg class="alert-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            ${al.tipo === 'success' ? '<polyline points="20 6 9 17 4 12"/>' : '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>'}
+          </svg>
+          <span>${al.texto}</span>
+        </div>
+      `).join('')}
+    </div>`;
+  }
+
+  // VOLUMEN POR MÚSCULO
+  if (a.volumen_musculos && a.volumen_musculos.length) {
+    html += `
+    <div class="ai-section">
+      <div class="ai-section-title">Volumen por grupo muscular (semana actual)</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;">
+        ${a.volumen_musculos.map(v => {
+          const color = v.estado === 'optimo' ? 'var(--green)' : v.estado === 'excesivo' ? 'var(--red)' : 'var(--amber)';
+          const icono = v.estado === 'optimo' ? '✓' : v.estado === 'excesivo' ? '⚠' : '↓';
+          return `
+            <div style="background:var(--bg3);border-radius:8px;padding:10px 12px;border:1px solid var(--border);border-left:3px solid ${color};">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+                <span style="font-size:12px;color:var(--text2);font-family:var(--mono);text-transform:uppercase;">${v.musculo}</span>
+                <span style="font-family:var(--mono);font-size:13px;color:${color};">${icono} ${v.series_semana} series</span>
+              </div>
+              <div style="font-size:12px;color:var(--text3);line-height:1.4;">${v.recomendacion}</div>
+            </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  }
+
+  // FATIGA
+  if (a.fatiga) {
+    html += `
+    <div class="ai-section">
+      <div class="ai-section-title">Fatiga acumulada</div>
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:10px;">
+        <div style="flex:1;background:var(--border2);border-radius:4px;height:8px;overflow:hidden;">
+          <div style="height:100%;width:${a.fatiga.score}%;background:${fatigaColor};border-radius:4px;transition:width 1s ease;"></div>
+        </div>
+        <span style="font-family:var(--mono);font-size:14px;color:${fatigaColor};font-weight:500;min-width:100px;text-align:right;">${a.fatiga.nivel.toUpperCase()} (${a.fatiga.score}%)</span>
+      </div>
+      <p class="ai-text">${a.fatiga.explicacion}</p>
+    </div>`;
+  }
+
+  // TENDENCIAS DE EJERCICIOS
+  if (a.tendencias_ejercicios && a.tendencias_ejercicios.length) {
+    html += `
+    <div class="ai-section">
+      <div class="ai-section-title">Tendencias por ejercicio (todos)</div>
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        ${a.tendencias_ejercicios.map(p => {
+          const col = p.tendencia === 'subiendo' ? 'var(--green)' : p.tendencia === 'bajando' ? 'var(--red)' : p.tendencia === 'estancado' ? 'var(--amber)' : 'var(--text3)';
+          const arrow = p.tendencia === 'subiendo' ? '↑' : p.tendencia === 'bajando' ? '↓' : p.tendencia === 'estancado' ? '=' : '→';
+          return `
+          <div style="background:var(--bg3);border-radius:8px;padding:10px 14px;border:1px solid var(--border);display:flex;align-items:center;gap:12px;">
+            <span style="color:${col};font-family:var(--mono);font-size:16px;font-weight:bold;min-width:18px;text-align:center;">${arrow}</span>
+            <div style="flex:1;min-width:0;">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:2px;">
+                <span style="font-size:13px;font-weight:500;color:var(--text);">${p.ejercicio}</span>
+                <span style="font-size:10px;color:var(--text3);font-family:var(--mono);background:var(--bg2);padding:1px 6px;border-radius:4px;">${p.musculo || ''}</span>
+              </div>
+              <div style="font-size:12px;color:var(--text3);line-height:1.4;">${p.analisis}</div>
+            </div>
+            <span style="font-family:var(--mono);font-size:13px;color:${col};white-space:nowrap;">${p.delta_kg > 0 ? '+' : ''}${p.delta_kg || 0}kg</span>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  }
+
+  // PUNTOS DÉBILES
+  if (a.puntos_debiles_analisis) {
+    html += `
+    <div class="ai-section">
+      <div class="ai-section-title">Análisis de puntos débiles</div>
+      <div style="background:var(--accent-glow);border:1px solid rgba(124,106,247,0.3);border-radius:8px;padding:14px 16px;">
+        <p class="ai-text" style="margin:0;">${a.puntos_debiles_analisis}</p>
+      </div>
+    </div>`;
+  }
+
+  // NOTAS RELEVANTES
+  if (a.notas_relevantes) {
+    html += `
+    <div class="ai-section">
+      <div class="ai-section-title">Notas personales del cliente</div>
+      <p class="ai-text" style="background:var(--bg3);padding:14px 16px;border-radius:8px;border-left:3px solid var(--accent2);">${a.notas_relevantes}</p>
+    </div>`;
+  }
+
+  // RECOMENDACIONES
+  if (a.recomendaciones && a.recomendaciones.length) {
+    html += `
+    <div class="ai-section">
+      <div class="ai-section-title">Plan para la próxima semana</div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        ${a.recomendaciones.map((r, i) => `
+          <div style="display:flex;align-items:flex-start;gap:10px;">
+            <span style="background:var(--accent-glow);color:var(--accent2);border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;flex-shrink:0;margin-top:1px;">${i+1}</span>
+            <p class="ai-text" style="margin:0;">${r}</p>
+          </div>
+        `).join('')}
+      </div>
+    </div>`;
+  }
+
+  // MENSAJE PARA CLIENTE
+  if (a.mensaje_cliente) {
+    html += `
+    <div class="ai-section">
+      <div class="ai-section-title">Mensaje listo para WhatsApp</div>
+      <div class="msg-ready" id="msgCliente">
+        <button class="msg-copy" onclick="copyMsg()">Copiar</button>
+        ${a.mensaje_cliente}
+      </div>
+    </div>`;
+  }
+
+  document.getElementById('aiOutput').innerHTML = html;
+  document.getElementById('aiOutput').classList.add('visible');
+}
+
+function renderRawAnalysis(raw) {
+  document.getElementById('aiOutput').innerHTML = `
+    <div class="ai-section">
+      <div class="ai-section-title">Análisis IA</div>
+      <p class="ai-text" style="white-space:pre-wrap;">${raw}</p>
+    </div>`;
+  document.getElementById('aiOutput').classList.add('visible');
+}
+
+async function runFreePrompt() {
+  const input = document.getElementById('freePrompt');
+  const q = input.value.trim();
+  if (!q) return;
+
+  const btn = event.currentTarget;
+  btn.disabled = true;
+  btn.textContent = 'Pensando...';
+
+  try {
+    const prompt = buildPrompt(clienteActual, q);
+    const resp = await fetch(SHEETS_URL, {
+      method: "POST",
+      redirect: "follow",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "ia", prompt: prompt })
+    });
+    const data = await resp.json();
+    if (data.error) throw new Error(data.error);
+    const answer = (data.content || []).map(b => b.text || '').join('');
+
+    const existing = document.getElementById('aiOutput').innerHTML;
+    document.getElementById('aiOutput').innerHTML = existing + `
+      <div class="ai-section" style="margin-top:20px;padding-top:20px;border-top:1px solid var(--border);">
+        <div class="ai-section-title">Respuesta: "${q.substring(0,40)}${q.length > 40 ? '...' : ''}"</div>
+        <p class="ai-text">${answer}</p>
+      </div>`;
+    document.getElementById('aiOutput').classList.add('visible');
+    document.getElementById('aiEmpty').style.display = 'none';
+    input.value = '';
+  } catch(e) {
+    alert('Error al conectar. Inténtalo de nuevo.');
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Preguntar';
+}
+
+function copyMsg() {
+  const msg = document.getElementById('msgCliente').textContent.replace('Copiar', '').trim();
+  navigator.clipboard.writeText(msg).then(() => {
+    const btn = document.querySelector('.msg-copy');
+    btn.textContent = '¡Copiado!';
+    setTimeout(() => btn.textContent = 'Copiar', 2000);
+  });
+}
+
+function resetAI() {
+  document.getElementById('aiEmpty').style.display = 'block';
+  document.getElementById('aiOutput').classList.remove('visible');
+  document.getElementById('aiOutput').innerHTML = '';
+  document.getElementById('aiLoading').style.display = 'none';
+  document.getElementById('aiTimestamp').textContent = 'Pulsa "Analizar con IA" para generar';
+  document.getElementById('analyzeBtn').textContent = 'Analizar con IA';
+  document.getElementById('analyzeBtn').disabled = false;
+}
+
+// ==========================================
+// EXERCISE DETAIL VIEW
+// ==========================================
+function renderExerciseDetail() {
+  const ejercicios = [...new Set(clienteActual.historico.map(r => r.ejercicio))];
+  const html = ejercicios.map(ej => {
+    const rows = clienteActual.historico.filter(r => r.ejercicio === ej).sort((a, b) => a.semana.localeCompare(b.semana));
+    const semanas = rows.map(r => r.semana);
+    const rms = rows.map(r => r.rm);
+    const maxRm = Math.max(...rms);
+    const last = rows[rows.length - 1];
+    const prev = rows.length > 1 ? rows[rows.length - 2] : null;
+    const delta = prev ? last.rm - prev.rm : 0;
+    const col = delta > 0 ? 'var(--green)' : delta < 0 ? 'var(--red)' : 'var(--text3)';
+
+    return `
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+          <span style="font-family:var(--display);font-size:14px;font-weight:700;">${ej}</span>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-family:var(--mono);font-size:13px;color:var(--text2);">1RM: ${last.rm}kg</span>
+            <span style="font-family:var(--mono);font-size:12px;color:${col};">${delta >= 0 ? '+' : ''}${delta}kg</span>
+          </div>
+        </div>
+        <div style="display:flex;align-items:flex-end;gap:6px;height:40px;">
+          ${rms.map((rm, i) => `
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;">
+              <div style="width:100%;background:${i === rms.length - 1 ? 'var(--accent)' : 'var(--border2)'};border-radius:2px;height:${Math.max(6, Math.round((rm / maxRm) * 36))}px;"></div>
+              <span style="font-size:9px;color:var(--text3);font-family:var(--mono);">${semanas[i].replace('Semana ', 'S')}</span>
+            </div>
+          `).join('')}
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:12px;">
+          <div style="background:var(--bg3);border-radius:6px;padding:8px;border:1px solid var(--border);">
+            <div style="font-size:10px;color:var(--text3);font-family:var(--mono);">ÚLTIMO PESO</div>
+            <div style="font-size:15px;font-weight:600;font-family:var(--display);color:var(--text);">${last.peso}kg</div>
+          </div>
+          <div style="background:var(--bg3);border-radius:6px;padding:8px;border:1px solid var(--border);">
+            <div style="font-size:10px;color:var(--text3);font-family:var(--mono);">ÚLTIMO VOLUMEN</div>
+            <div style="font-size:15px;font-weight:600;font-family:var(--display);color:var(--text);">${last.volumen.toLocaleString()}kg</div>
+          </div>
+          <div style="background:var(--bg3);border-radius:6px;padding:8px;border:1px solid var(--border);">
+            <div style="font-size:10px;color:var(--text3);font-family:var(--mono);">REPS × SERIES</div>
+            <div style="font-size:15px;font-weight:600;font-family:var(--display);color:var(--text);">${last.reps}×${last.series}</div>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+  document.getElementById('exerciseDetailGrid').innerHTML = html;
+}
+
+// ==========================================
+// HISTORY VIEW
+// ==========================================
+function renderHistory() {
+  const rows = [...clienteActual.historico].sort((a, b) => b.semana.localeCompare(a.semana) || b.dia.localeCompare(a.dia));
+  const html = `
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;">
+      <div style="overflow-x:auto;">
+        <table style="width:100%;border-collapse:collapse;font-size:13px;">
+          <thead>
+            <tr style="background:var(--bg3);">
+              <th style="padding:10px 16px;text-align:left;font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:1px;font-weight:400;white-space:nowrap;">SEMANA</th>
+              <th style="padding:10px 16px;text-align:left;font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:1px;font-weight:400;">DÍA</th>
+              <th style="padding:10px 16px;text-align:left;font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:1px;font-weight:400;">EJERCICIO</th>
+              <th style="padding:10px 16px;text-align:right;font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:1px;font-weight:400;">SERIES</th>
+              <th style="padding:10px 16px;text-align:right;font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:1px;font-weight:400;">REPS</th>
+              <th style="padding:10px 16px;text-align:right;font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:1px;font-weight:400;">PESO</th>
+              <th style="padding:10px 16px;text-align:right;font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:1px;font-weight:400;">VOLUMEN</th>
+              <th style="padding:10px 16px;text-align:right;font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:1px;font-weight:400;">1RM EST.</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows.map((r, i) => `
+              <tr style="border-top:1px solid var(--border);${i % 2 === 0 ? '' : 'background:rgba(255,255,255,0.01)'}">
+                <td style="padding:9px 16px;color:var(--text3);font-family:var(--mono);font-size:12px;">${r.semana.replace('Semana ', 'S')}</td>
+                <td style="padding:9px 16px;color:var(--text3);font-size:12px;">${r.dia}</td>
+                <td style="padding:9px 16px;color:var(--text);font-weight:400;">${r.ejercicio}</td>
+                <td style="padding:9px 16px;text-align:right;font-family:var(--mono);color:var(--text2);">${r.series}</td>
+                <td style="padding:9px 16px;text-align:right;font-family:var(--mono);color:var(--text2);">${r.reps}</td>
+                <td style="padding:9px 16px;text-align:right;font-family:var(--mono);color:var(--text2);">${r.peso}kg</td>
+                <td style="padding:9px 16px;text-align:right;font-family:var(--mono);color:var(--text2);">${r.volumen.toLocaleString()}</td>
+                <td style="padding:9px 16px;text-align:right;font-family:var(--mono);color:var(--accent2);font-weight:500;">${r.rm}kg</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+  document.getElementById('historyTable').innerHTML = html;
+}
+
+// ==========================================
+// RECARGAR CLIENTE ACTUAL
+// ==========================================
+async function recargarCliente() {
+  if (!clienteActual) return;
+  const idx = DB.clientes.findIndex(c => c.nombre === clienteActual.nombre);
+  if (idx === -1) return;
+  DB.clientes[idx].cargado = false;
+  await selectCliente(idx);
+}
+
+init();
+</script>
+</body>
+</html>
