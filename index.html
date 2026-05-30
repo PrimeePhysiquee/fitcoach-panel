@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FitCoach AI</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a0f;--bg2:#111118;--bg3:#1a1a24;--card:#16161f;--border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.12);--accent:#7c6af7;--accent2:#a394ff;--glow:rgba(124,106,247,0.15);--green:#3ecf8e;--green-bg:rgba(62,207,142,0.1);--red:#f87171;--red-bg:rgba(248,113,113,0.1);--amber:#fbbf24;--amber-bg:rgba(251,191,36,0.1);--text:#e8e8f0;--text2:#9090a8;--text3:#5a5a72;--mono:'DM Mono',monospace;--sans:'DM Sans',sans-serif;--display:'Syne',sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;font-size:14px}
+.app{display:flex;min-height:100vh}
+.sidebar{width:240px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;position:sticky;top:0;height:100vh}
+.logo{padding:24px 20px 20px;border-bottom:1px solid var(--border)}
+.logo-mark{font-family:var(--display);font-size:18px;font-weight:800;color:var(--text)}
+.logo-mark span{color:var(--accent2)}
+.logo-sub{font-size:11px;color:var(--text3);font-family:var(--mono);margin-top:2px}
+.nav{padding:12px 8px 4px}
+.nav-btn{display:flex;align-items:center;gap:10px;padding:9px 12px;margin-bottom:2px;border-radius:8px;cursor:pointer;color:var(--text2);font-size:13.5px;border:none;background:none;width:100%;text-align:left;transition:all .15s}
+.nav-btn:hover{background:var(--bg3);color:var(--text)}
+.nav-btn.active{background:var(--glow);color:var(--accent2)}
+.sec-label{padding:16px 12px 8px;font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:1px;text-transform:uppercase}
+.client-list{padding:8px;flex:1;overflow-y:auto}
+.client-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;cursor:pointer;transition:all .15s}
+.client-item:hover{background:var(--bg3)}
+.client-item.active{background:var(--glow)}
+.avatar{width:30px;height:30px;border-radius:50%;background:var(--bg3);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-family:var(--display);font-size:11px;font-weight:700;color:var(--accent2);flex-shrink:0}
+.client-info{flex:1;min-width:0}
+.client-name{font-size:13px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.client-meta{font-size:11px;color:var(--text3);font-family:var(--mono)}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--green);flex-shrink:0}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.topbar{background:var(--bg2);border-bottom:1px solid var(--border);padding:16px 28px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.topbar-left h2{font-family:var(--display);font-size:16px;font-weight:700}
+.topbar-sub{font-size:12px;color:var(--text3);font-family:var(--mono);margin-top:1px}
+.topbar-right{display:flex;gap:8px;align-items:center}
+.badge{display:inline-flex;align-items:center;padding:4px 10px;border-radius:20px;font-size:11px;font-family:var(--mono);font-weight:500}
+.badge-green{background:var(--green-bg);color:var(--green)}
+.badge-amber{background:var(--amber-bg);color:var(--amber)}
+.badge-purple{background:var(--glow);color:var(--accent2)}
+.btn{padding:8px 16px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;border:1px solid var(--border2);font-family:var(--sans);transition:all .15s}
+.btn-primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn-primary:hover{background:var(--accent2)}
+.btn-ghost{background:transparent;color:var(--text2)}
+.btn-ghost:hover{background:var(--bg3);color:var(--text)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.content{flex:1;overflow-y:auto;padding:24px 28px}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px}
+.stat-label{font-size:11px;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+.stat-value{font-family:var(--display);font-size:26px;font-weight:700;line-height:1;margin-bottom:6px}
+.stat-delta{font-size:12px;font-family:var(--mono);color:var(--text3)}
+.delta-up{color:var(--green)}
+.delta-down{color:var(--red)}
+.panels-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+.panel{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.panel-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.panel-title{font-family:var(--display);font-size:13px;font-weight:700}
+.panel-body{padding:16px 18px}
+.ex-row{display:flex;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);gap:12px}
+.ex-row:last-child{border-bottom:none}
+.ex-name{flex:1;font-size:13px}
+.week-bars{display:flex;gap:4px;align-items:flex-end;height:48px;margin-top:8px}
+.week-bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px}
+.week-bar{width:100%;border-radius:3px 3px 0 0;background:var(--accent);opacity:.6;cursor:pointer}
+.week-bar.active{opacity:1}
+.week-label{font-size:10px;color:var(--text3);font-family:var(--mono)}
+.checkin-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.checkin-item{background:var(--bg3);border-radius:8px;padding:12px;border:1px solid var(--border)}
+.checkin-label{font-size:11px;color:var(--text3);font-family:var(--mono);margin-bottom:6px}
+.bar-track{height:4px;background:var(--border2);border-radius:2px;margin-bottom:4px;overflow:hidden}
+.bar-fill{height:100%;border-radius:2px;transition:width .6s ease}
+.checkin-score{font-family:var(--mono);font-size:13px}
+.ai-panel{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:20px}
+.ai-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.ai-orb{width:28px;height:28px;border-radius:50%;background:var(--glow);border:1px solid var(--accent);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ai-body{padding:20px}
+.ai-loading{display:flex;align-items:center;gap:10px;color:var(--text3);font-family:var(--mono);font-size:13px;padding:20px 0}
+.spinner{width:16px;height:16px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ai-output{display:none}
+.ai-output.visible{display:block}
+.ai-section{margin-bottom:20px}
+.ai-section-title{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--accent2);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.ai-section-title::after{content:'';flex:1;height:1px;background:var(--border)}
+.ai-text{font-size:13.5px;line-height:1.7;color:var(--text2)}
+.alert-row{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;border-radius:8px;margin-bottom:8px;font-size:13px;line-height:1.5}
+.alert-warning{background:var(--amber-bg);color:var(--amber);border:1px solid rgba(251,191,36,.2)}
+.alert-danger{background:var(--red-bg);color:var(--red);border:1px solid rgba(248,113,113,.2)}
+.alert-success{background:var(--green-bg);color:var(--green);border:1px solid rgba(62,207,142,.2)}
+.msg-ready{background:var(--bg3);border:1px solid var(--border2);border-radius:10px;padding:14px 16px;font-size:13px;line-height:1.6;color:var(--text2);font-style:italic;position:relative;margin-top:8px}
+.msg-copy{position:absolute;top:8px;right:8px;background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:4px 8px;font-size:11px;font-family:var(--mono);color:var(--text3);cursor:pointer}
+.msg-copy:hover{color:var(--text)}
+.input-row{display:flex;gap:8px;margin-top:16px}
+.ai-input{flex:1;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--sans);font-size:13px;outline:none}
+.ai-input:focus{border-color:var(--accent)}
+.ai-input::placeholder{color:var(--text3)}
+.empty-state{text-align:center;padding:40px 20px;color:var(--text3)}
+.empty-state h3{font-family:var(--display);font-size:16px;color:var(--text2);margin-bottom:8px}
+.empty-state p{font-size:13px;line-height:1.5}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:1000;align-items:center;justify-content:center}
+.modal-box{background:var(--card);border:1px solid var(--border2);border-radius:16px;padding:28px;width:520px;max-width:90vw;max-height:90vh;overflow-y:auto}
+.modal-title{font-family:var(--display);font-size:18px;font-weight:700;margin-bottom:4px}
+.modal-sub{font-size:13px;color:var(--text3);margin-bottom:20px}
+.form-label{font-size:12px;color:var(--text3);font-family:var(--mono);display:block;margin-bottom:6px}
+.form-textarea{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--sans);font-size:13px;outline:none;resize:none;margin-bottom:14px}
+.modal-footer{display:flex;gap:8px;justify-content:flex-end}
+.skeleton{animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:.4}50%{opacity:.8}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-mark">FitCoach<span>AI</span></div>
+    <div class="logo-sub">v2.0 — panel análisis</div>
+  </div>
+  <div class="nav">
+    <button class="nav-btn active" onclick="setView('dashboard',this)">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Dashboard
+    </button>
+    <button class="nav-btn" onclick="setView('progresion',this)">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Progresión
+    </button>
+    <button class="nav-btn" onclick="setView('historial',this)">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      Historial
+    </button>
+  </div>
+  <div class="sec-label">Clientes activos</div>
+  <div class="client-list" id="clientList"><div class="ai-loading" style="padding:16px"><div class="spinner"></div><span style="font-size:12px">Cargando...</span></div></div>
+</aside>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <h2 id="topTitle">—</h2>
+      <div class="topbar-sub" id="topSub">Selecciona un cliente</div>
+    </div>
+    <div class="topbar-right">
+      <span class="badge badge-green" id="statusBadge">● Activo</span>
+      <select id="bloqueSelector" style="background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:7px 12px;color:var(--text2);font-family:var(--mono);font-size:11px;outline:none;cursor:pointer;display:none" onchange="onBloqueChange()">
+        <option value="todos">Todos los bloques</option>
+      </select>
+      <button class="btn btn-ghost" onclick="abrirPerfil()" style="font-size:12px;padding:7px 12px">👤 Perfil</button>
+      <button class="btn btn-ghost" onclick="recargar()" style="font-size:12px;padding:7px 12px">↻ Actualizar</button>
+      <button class="btn btn-primary" id="analyzeBtn" onclick="runAnalysis()">Analizar con IA</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <!-- DASHBOARD -->
+    <div id="view-dashboard">
+      <div class="stats-grid" id="statsGrid">
+        ${['','','',''].map(()=>`<div class="stat-card skeleton" style="height:90px"></div>`).join('')}
+      </div>
+      <div class="panels-grid">
+        <div class="panel">
+          <div class="panel-header"><span class="panel-title">Progresión 1RM</span><span class="badge badge-purple" id="rmBadge">—</span></div>
+          <div class="panel-body" id="rmPanel"><div class="skeleton" style="height:120px;border-radius:8px"></div></div>
+        </div>
+        <div class="panel">
+          <div class="panel-header"><span class="panel-title">Volumen semanal</span><span class="badge badge-green" id="volBadge">—</span></div>
+          <div class="panel-body" id="volPanel"><div class="skeleton" style="height:120px;border-radius:8px"></div></div>
+        </div>
+      </div>
+      <div class="panel" style="margin-bottom:20px">
+        <div class="panel-header"><span class="panel-title">Check-in semanal</span><span class="badge badge-amber" id="checkinDate">Sin datos</span></div>
+        <div class="panel-body"><div class="checkin-grid" id="checkinGrid"></div></div>
+      </div>
+      <div class="ai-panel">
+        <div class="ai-header">
+          <div style="display:flex;align-items:center;gap:10px">
+            <div class="ai-orb"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a394ff" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg></div>
+            <div>
+              <div style="font-family:var(--display);font-size:14px;font-weight:700">Análisis IA</div>
+              <div style="font-size:11px;color:var(--text3);font-family:var(--mono)" id="aiTimestamp">Pulsa "Analizar con IA" para generar</div>
+            </div>
+          </div>
+        </div>
+        <div class="ai-body">
+          <div id="aiEmpty" class="empty-state">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="opacity:.2;margin-bottom:16px"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+            <h3>Sin análisis todavía</h3>
+            <p>Pulsa "Analizar con IA" para procesar el histórico y generar el informe completo.</p>
+          </div>
+          <div class="ai-loading" id="aiLoading" style="display:none">
+            <div class="spinner"></div>
+            <span id="loadingText">Procesando datos...</span>
+          </div>
+          <div class="ai-output" id="aiOutput"></div>
+          <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border)">
+            <div style="font-size:11px;color:var(--text3);font-family:var(--mono);margin-bottom:8px">PREGUNTA LIBRE AL ASISTENTE</div>
+            <div class="input-row">
+              <input class="ai-input" id="freePrompt" placeholder="ej: ¿Debería hacer deload esta semana?">
+              <button class="btn btn-primary" onclick="runFreePrompt()">Preguntar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROGRESION -->
+    <div id="view-progresion" style="display:none">
+      <div style="font-family:var(--display);font-size:20px;font-weight:700;margin-bottom:20px">Análisis por ejercicio</div>
+      <div id="progresionGrid"></div>
+    </div>
+
+    <!-- HISTORIAL -->
+    <div id="view-historial" style="display:none">
+      <div style="font-family:var(--display);font-size:20px;font-weight:700;margin-bottom:20px">Historial completo</div>
+      <div id="historialTable"></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- PERFIL MODAL -->
+<div class="modal" id="perfilModal">
+  <div class="modal-box">
+    <div class="modal-title">Perfil del cliente</div>
+    <div class="modal-sub" id="perfilNombre">—</div>
+    <label class="form-label">OBJETIVO PRINCIPAL</label>
+    <textarea class="form-textarea" id="perfilObjetivo" rows="3" placeholder="Ej: Hipertrofia general, ganar masa muscular, perder grasa..."></textarea>
+    <label class="form-label">PUNTOS DÉBILES MUSCULARES</label>
+    <textarea class="form-textarea" id="perfilDebiles" rows="2" placeholder="Ej: Espalda media, gemelos, hombro posterior..."></textarea>
+    <label class="form-label">NOTAS DEL ENTRENADOR (lesiones, particularidades)</label>
+    <textarea class="form-textarea" id="perfilNotasEnt" rows="3" placeholder="Ej: Lesión hombro derecho, evitar press militar con barra..."></textarea>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="document.getElementById('perfilModal').style.display='none'">Cancelar</button>
+      <button class="btn btn-primary" onclick="guardarPerfil()">Guardar perfil</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const SHEETS_URL = "https://script.google.com/macros/s/AKfycbyHsUVYHo8lqowkWW_cEYk7oOXSq8FLuPNC5d2m66I1piTF5GZG8aExTDKtp_z0SsxfBg/exec";
+
+let DB = { clientes: [] };
+let clienteActual = null;
+let currentView = 'dashboard';
+
+async function init() {
+  try {
+    const data = await fetch(SHEETS_URL + "?action=clientes").then(r => r.json());
+    if (data.error) throw new Error(data.error);
+    DB.clientes = (data.clientes || []).map((c, i) => ({ ...c, historico: [], checkin: null, notas_vip: [], cargado: false, semana_actual: 1, tipo: 'basico' }));
+    renderClientList();
+    if (DB.clientes.length > 0) selectCliente(0);
+  } catch(err) {
+    document.getElementById('clientList').innerHTML = `<div style="padding:16px;font-size:12px;color:var(--red);text-align:center">⚠️ ${err.message}</div>`;
+  }
+}
+
+function renderClientList() {
+  document.getElementById('clientList').innerHTML = DB.clientes.map((c, i) => `
+    <div class="client-item" onclick="selectCliente(${i})" id="ci-${i}">
+      <div class="avatar">${c.iniciales}</div>
+      <div class="client-info">
+        <div class="client-name">${c.nombre}</div>
+        <div class="client-meta" id="cm-${i}">S${c.semana_actual}</div>
+      </div>
+      <div class="dot"></div>
+    </div>`).join('');
+}
+
+async function selectCliente(idx) {
+  document.querySelectorAll('.client-item').forEach((el, i) => el.classList.toggle('active', i === idx));
+  clienteActual = DB.clientes[idx];
+  resetAI();
+  document.getElementById('topTitle').textContent = clienteActual.nombre;
+  document.getElementById('topSub').textContent = 'Cargando datos...';
+  if (clienteActual.cargado) { renderDashboard(); return; }
+  try {
+    const data = await fetch(SHEETS_URL + "?action=completo&cliente=" + encodeURIComponent(clienteActual.nombre.toLowerCase())).then(r => r.json());
+    if (data.error) throw new Error(data.error);
+    clienteActual.historico = (data.historico || []).map(r => ({ ...r, ejercicio: (r.ejercicio||'').trim(), semana: (r.semana||'').trim(), dia: (r.dia||'').trim() }));
+    clienteActual.semana_actual = data.semana_actual || 1;
+    clienteActual.tipo = data.tipo || 'basico';
+    clienteActual.checkin = normCheckin(data.ultimo_checkin);
+    clienteActual.notas_vip = data.notas_vip || [];
+    clienteActual.cargado = true;
+    document.getElementById('cm-' + idx).textContent = 'S' + clienteActual.semana_actual + ' · ' + etiqueta(clienteActual.tipo);
+    document.getElementById('topSub').textContent = 'Bloque: ' + (clienteActual.historico.length ? clienteActual.historico[clienteActual.historico.length-1].bloque || 'Hipertrofia' : 'Hipertrofia') + ' · Semana ' + clienteActual.semana_actual + ' · ' + etiqueta(clienteActual.tipo);
+    renderDashboard();
+    cargarBloques();
+  } catch(err) {
+    document.getElementById('topSub').textContent = '⚠️ Error: ' + err.message;
+    document.getElementById('statsGrid').innerHTML = `<div style="grid-column:1/-1;color:var(--red);font-size:13px">⚠️ ${err.message}</div>`;
+  }
+}
+
+function etiqueta(t) { return t === 'vip_semanal' ? 'VIP Semanal' : t === 'vip_mensual' ? 'VIP Mensual' : 'Mensual'; }
+
+function normCheckin(raw) {
+  if (!raw) return null;
+  return { fecha: raw.fecha||'-', fatiga_muscular: raw.fatiga||3, calidad_sueno: raw.sueno||3, molestia: raw.molestia||'No', donde_molestia: raw.donde_molestia||null, entrenos_completados: raw.entrenos||0, peso: raw.peso||null, comentario: raw.comentario||null };
+}
+
+function setView(v, btn) {
+  currentView = v;
+  document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  ['dashboard','progresion','historial'].forEach(view => {
+    const el = document.getElementById('view-' + view);
+    if (el) el.style.display = view === v ? 'block' : 'none';
+  });
+  if (v === 'progresion') renderProgresion();
+  if (v === 'historial') renderHistorial();
+}
+
+function getHistFiltrado() {
+  const sel = document.getElementById('bloqueSelector');
+  const bloque = sel && sel.style.display !== 'none' ? sel.value : 'todos';
+  if (!bloque || bloque === 'todos') return clienteActual.historico;
+  const filtrado = clienteActual.historico.filter(r => (r.bloque||'').toUpperCase() === bloque.toUpperCase());
+  return filtrado.length > 0 ? filtrado : clienteActual.historico;
+}
+
+function getSemanas(hist) {
+  // Agrupa semanas por bloque para ordenarlas correctamente
+  // Formato: "BLOQUE|||Semana X" para ordenar primero por bloque luego por semana
+  const claves = [...new Set(hist.map(r => {
+    const bloque = r.bloque || '';
+    const semana = r.semana || '';
+    return bloque + '|||' + semana;
+  }))];
+
+  // Ordenar: primero por fecha real si existe, si no por bloque+número de semana
+  claves.sort((a, b) => {
+    const [bloqueA, semA] = a.split('|||');
+    const [bloqueB, semB] = b.split('|||');
+    // Intentar ordenar por fecha real de un registro de esa semana/bloque
+    const fechaA = hist.find(r => r.bloque === bloqueA && r.semana === semA)?.fecha || '';
+    const fechaB = hist.find(r => r.bloque === bloqueB && r.semana === semB)?.fecha || '';
+    if (fechaA && fechaB) return fechaA.localeCompare(fechaB);
+    // Si no hay fecha, ordenar por bloque alfabético + número de semana
+    if (bloqueA !== bloqueB) return bloqueA.localeCompare(bloqueB);
+    const numA = parseInt((semA.match(/\d+/) || ['0'])[0]);
+    const numB = parseInt((semB.match(/\d+/) || ['0'])[0]);
+    return numA - numB;
+  });
+
+  // Devolver solo los nombres de semana en orden correcto (con etiqueta de bloque si hay varios)
+  const bloques = [...new Set(hist.map(r => r.bloque||''))];
+  const variosB = bloques.length > 1;
+  return claves.map(c => {
+    const [bloque, semana] = c.split('|||');
+    return { clave: c, label: variosB ? `${semana} (${bloque})` : semana, semana, bloque };
+  });
+}
+
+function renderDashboard() { renderStats(); renderRM(); renderVolume(); renderCheckin(); }
+
+function renderStats() {
+  const hist = getHistFiltrado();
+  if (!hist || !hist.length) { document.getElementById('statsGrid').innerHTML = `<div style="grid-column:1/-1;color:var(--text3);text-align:center;padding:16px">Sin datos todavía</div>`; return; }
+  const semanas = getSemanas(hist);
+  const semActObj = semanas[semanas.length - 1];
+  const semPrevObj = semanas.length > 1 ? semanas[semanas.length - 2] : null;
+  const histSemAct = hist.filter(r => r.semana === semActObj.semana && (r.bloque||'') === semActObj.bloque);
+  const histSemPrev = semPrevObj ? hist.filter(r => r.semana === semPrevObj.semana && (r.bloque||'') === semPrevObj.bloque) : [];
+  const volAct = histSemAct.reduce((s, r) => s + (r.volumen||0), 0);
+  const volPrev = histSemPrev.reduce((s, r) => s + (r.volumen||0), 0);
+  const deltaVol = volPrev ? Math.round(((volAct - volPrev) / volPrev) * 100) : 0;
+  const rmTop = histSemAct.length ? Math.max(...histSemAct.map(r => r.rm||0)) : 0;
+  const rmPrev = histSemPrev.length ? Math.max(...histSemPrev.map(r => r.rm||0)) : 0;
+  const dias = new Set(histSemAct.map(r => r.dia)).size;
+  const stats = [
+    { label: 'Volumen semana actual', value: volAct.toLocaleString(), unit: 'kg', delta: deltaVol, suffix: '%', show: semPrevObj !== null },
+    { label: '1RM más alto', value: rmTop, unit: 'kg', delta: rmTop - rmPrev, suffix: 'kg', show: rmPrev > 0 },
+    { label: 'Días entrenados', value: dias, unit: 'esta semana', delta: null },
+    { label: 'Semanas registradas', value: semanas.length, unit: 'semanas', delta: null }
+  ];
+  document.getElementById('statsGrid').innerHTML = stats.map(s => `
+    <div class="stat-card">
+      <div class="stat-label">${s.label}</div>
+      <div class="stat-value">${s.value}<span style="font-size:14px;color:var(--text3);font-weight:400"> ${s.unit}</span></div>
+      ${s.show && s.delta !== null ? `<div class="stat-delta ${s.delta > 0 ? 'delta-up' : s.delta < 0 ? 'delta-down' : ''}">${s.delta > 0 ? '↑' : s.delta < 0 ? '↓' : '→'} ${Math.abs(s.delta)}${s.suffix} vs semana anterior</div>` : `<div class="stat-delta">— semana ${semanas.length}</div>`}
+    </div>`).join('');
+}
+
+function renderRM() {
+  const hist = getHistFiltrado();
+  if (!hist || !hist.length) { document.getElementById('rmPanel').innerHTML = '<p style="color:var(--text3);font-size:13px">Sin datos todavía</p>'; return; }
+  const semanas = getSemanas(hist);
+  document.getElementById('rmBadge').textContent = semanas[semanas.length - 1]?.label || 'S1';
+  const ejercicios = [...new Set(hist.map(r => r.ejercicio))].slice(0, 7);
+  const html = ejercicios.map(ej => {
+    const rows = hist.filter(r => r.ejercicio === ej).sort((a, b) => {
+      if (a.fecha && b.fecha) return a.fecha.localeCompare(b.fecha);
+      return (a.bloque||'').localeCompare(b.bloque||'') || a.semana.localeCompare(b.semana);
+    });
+    const last = rows[rows.length - 1];
+    const prev = rows.length > 1 ? rows[rows.length - 2] : null;
+    const delta = prev ? last.rm - prev.rm : 0;
+    const color = delta > 0 ? 'var(--green)' : delta < 0 ? 'var(--red)' : 'var(--text3)';
+    const label = ej.length > 25 ? ej.substring(0, 25) + '…' : ej;
+    const barH = [prev ? Math.round((prev.rm / last.rm) * 32) : 20, 32];
+    return `<div class="ex-row">
+      <span class="ex-name">${label}</span>
+      <div style="display:flex;gap:2px;align-items:flex-end">${barH.map((h, i) => `<div style="width:4px;height:${h}px;border-radius:2px;background:${i === 1 ? 'var(--accent)' : 'var(--text3)'};opacity:${i === 1 ? 1 : 0.4}"></div>`).join('')}</div>
+      <span style="font-family:var(--mono);font-size:13px;color:var(--text2)">${last.rm}kg</span>
+      <span style="font-family:var(--mono);font-size:12px;color:${color};min-width:44px;text-align:right">${delta !== 0 ? (delta > 0 ? '+' : '') + delta + 'kg' : '—'}</span>
+    </div>`;
+  }).join('');
+  document.getElementById('rmPanel').innerHTML = html;
+}
+
+function renderVolume() {
+  const hist = getHistFiltrado();
+  if (!hist || !hist.length) { document.getElementById('volPanel').innerHTML = '<p style="color:var(--text3);font-size:13px">Sin datos todavía</p>'; return; }
+  const semanas = getSemanas(hist);
+  const vols = semanas.map(s => hist.filter(r => r.semana === s.semana && (r.bloque||'') === s.bloque).reduce((acc, r) => acc + (r.volumen||0), 0));
+  const maxVol = Math.max(...vols) || 1;
+  if (vols.length > 1) {
+    const delta = Math.round(((vols[vols.length-1] - vols[vols.length-2]) / vols[vols.length-2]) * 100);
+    document.getElementById('volBadge').textContent = (delta >= 0 ? '+' : '') + delta + '%';
+  }
+  document.getElementById('volPanel').innerHTML = `
+    <div class="week-bars">
+      ${semanas.map((s, i) => `<div class="week-bar-wrap"><div class="week-bar ${i === semanas.length-1 ? 'active' : ''}" style="height:${Math.max(8, Math.round((vols[i]/maxVol)*48))}px" title="${vols[i].toLocaleString()} kg"></div></div>`).join('')}
+      ${[...Array(Math.max(0, 4-semanas.length))].map(() => `<div class="week-bar-wrap"><div style="width:100%;height:8px;background:var(--border);border-radius:3px 3px 0 0;opacity:.3"></div></div>`).join('')}
+    </div>
+    <div style="display:flex;gap:4px;margin-top:4px">
+      ${semanas.map(s => `<div class="week-bar-wrap"><div class="week-label">${s.label.replace('Semana ','S')}</div></div>`).join('')}
+    </div>
+    <div style="margin-top:16px;display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      ${semanas.map((s, i) => `<div style="background:var(--bg3);border-radius:6px;padding:8px 10px;border:1px solid var(--border)"><div style="font-size:10px;color:var(--text3);font-family:var(--mono)">${s.label}</div><div style="font-size:15px;font-weight:600;font-family:var(--display)">${vols[i].toLocaleString()} <span style="font-size:11px;color:var(--text3);font-weight:400">kg</span></div></div>`).join('')}
+    </div>`;
+}
+
+function renderCheckin() {
+  const c = clienteActual.checkin;
+  if (!c) { document.getElementById('checkinGrid').innerHTML = `<div style="grid-column:1/-1;color:var(--text3);font-size:13px;text-align:center;padding:8px">Sin check-in todavía</div>`; return; }
+  document.getElementById('checkinDate').textContent = c.fecha || '—';
+  const molVal = (c.molestia||'').toLowerCase();
+  const tieneMol = molVal.includes('sí') || molVal.includes('si') || molVal.includes('dolor') || molVal.includes('leve');
+  const metrics = [
+    { label: 'FATIGA', val: c.fatiga_muscular||3, max: 5, color: (c.fatiga_muscular||3) <= 2 ? 'var(--green)' : (c.fatiga_muscular||3) === 3 ? 'var(--amber)' : 'var(--red)', display: `${c.fatiga_muscular||3}/5` },
+    { label: 'SUEÑO', val: c.calidad_sueno||3, max: 5, color: (c.calidad_sueno||3) >= 4 ? 'var(--green)' : (c.calidad_sueno||3) === 3 ? 'var(--amber)' : 'var(--red)', display: `${c.calidad_sueno||3}/5` },
+    { label: 'MOLESTIAS', val: tieneMol ? 1 : 5, max: 5, color: tieneMol ? 'var(--red)' : 'var(--green)', display: tieneMol ? (c.donde_molestia||'Sí').substring(0,12) : 'No' },
+    { label: 'ENTRENOS', val: c.entrenos_completados||0, max: 5, color: (c.entrenos_completados||0) >= 3 ? 'var(--green)' : (c.entrenos_completados||0) >= 2 ? 'var(--amber)' : 'var(--red)', display: `${c.entrenos_completados||0}/sem` }
+  ];
+  if (c.peso) metrics.push({ label: 'PESO', val: 5, max: 5, color: 'var(--accent2)', display: `${c.peso}kg` });
+  document.getElementById('checkinGrid').innerHTML = metrics.map(m => `
+    <div class="checkin-item">
+      <div class="checkin-label">${m.label}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${(m.val/m.max)*100}%;background:${m.color}"></div></div>
+      <div class="checkin-score" style="color:${m.color}">${m.display}</div>
+    </div>`).join('') + (tieneMol && c.donde_molestia ? `<div style="grid-column:1/-1;padding:10px 12px;background:var(--red-bg);border:1px solid rgba(248,113,113,.2);border-radius:8px;font-size:12px;color:var(--red)">📍 ${c.donde_molestia}</div>` : '');
+}
+
+function resetAI() {
+  document.getElementById('aiEmpty').style.display = 'block';
+  document.getElementById('aiOutput').classList.remove('visible');
+  document.getElementById('aiOutput').innerHTML = '';
+  document.getElementById('aiLoading').style.display = 'none';
+  document.getElementById('aiTimestamp').textContent = 'Pulsa "Analizar con IA" para generar';
+  document.getElementById('analyzeBtn').textContent = 'Analizar con IA';
+  document.getElementById('analyzeBtn').disabled = false;
+}
+
+async function cargarBloques() {
+  const sel = document.getElementById('bloqueSelector');
+  sel.style.display = 'none';
+  try {
+    const data = await fetch(SHEETS_URL + "?action=bloques&cliente=" + encodeURIComponent(clienteActual.nombre.toLowerCase())).then(r => r.json());
+    const bloques = data.bloques || [];
+    if (bloques.length <= 1) { sel.style.display = 'none'; return; }
+    sel.innerHTML = '<option value="todos">Todos los bloques</option>' + bloques.map(b => `<option value="${b}">${b}</option>`).join('');
+    sel.style.display = 'block';
+  } catch(e) { sel.style.display = 'none'; }
+}
+
+function onBloqueChange() { resetAI(); renderDashboard(); }
+
+async function runAnalysis() {
+  if (!clienteActual) return;
+  const btn = document.getElementById('analyzeBtn');
+  const sel = document.getElementById('bloqueSelector');
+  const bloqueSeleccionado = sel.style.display !== 'none' ? sel.value : 'todos';
+  btn.disabled = true; btn.textContent = 'Analizando...';
+  document.getElementById('aiEmpty').style.display = 'none';
+  document.getElementById('aiOutput').classList.remove('visible');
+  document.getElementById('aiLoading').style.display = 'flex';
+  const texts = ['Procesando histórico...','Calculando volumen por músculo...','Analizando tendencias...','Generando informe con Opus...'];
+  let li = 0;
+  const lt = setInterval(() => { document.getElementById('loadingText').textContent = texts[li++ % texts.length]; }, 2000);
+  try {
+    const perfil = getPerfil(clienteActual.nombre);
+    const url = SHEETS_URL + "?action=analizar&cliente=" + encodeURIComponent(clienteActual.nombre.toLowerCase()) +
+      "&objetivo=" + encodeURIComponent(perfil.objetivo||'') +
+      "&debiles=" + encodeURIComponent(perfil.debiles||'') +
+      "&notas_ent=" + encodeURIComponent(perfil.notasEnt||'') +
+      "&bloque=" + encodeURIComponent(bloqueSeleccionado);
+    const data = await fetch(url).then(r => r.json());
+    clearInterval(lt);
+    document.getElementById('aiLoading').style.display = 'none';
+    if (data.error) throw new Error(data.error);
+    const raw = (data.content||[]).map(b => b.text||'').join('');
+    const clean = raw.replace(/^```json\s*/,'').replace(/^```\s*/,'').replace(/```\s*$/,'').trim();
+    let analysis;
+    try { analysis = JSON.parse(clean); } catch(e) {
+      const match = clean.match(/\{[\s\S]*\}/);
+      if (match) { try { analysis = JSON.parse(match[0]); } catch(e2) { analysis = null; } }
+      else { analysis = null; }
+    }
+    if (analysis) renderAnalysis(analysis);
+    else renderRawAnalysis(raw);
+  } catch(err) {
+    clearInterval(lt);
+    document.getElementById('aiLoading').style.display = 'none';
+    document.getElementById('aiOutput').innerHTML = `<div class="alert-row alert-danger"><span>⚠️ ${err.message}</span></div>`;
+    document.getElementById('aiOutput').classList.add('visible');
+  }
+  btn.disabled = false; btn.textContent = 'Actualizar análisis';
+  document.getElementById('aiTimestamp').textContent = 'Actualizado: ' + new Date().toLocaleTimeString('es-ES');
+}
+
+async function runFreePrompt() {
+  const input = document.getElementById('freePrompt');
+  const q = input.value.trim();
+  if (!q || !clienteActual) return;
+  const btn = event.currentTarget;
+  btn.disabled = true; btn.textContent = 'Pensando...';
+  try {
+    const url = SHEETS_URL + "?action=preguntar&cliente=" + encodeURIComponent(clienteActual.nombre.toLowerCase()) + "&pregunta=" + encodeURIComponent(q);
+    const data = await fetch(url).then(r => r.json());
+    if (data.error) throw new Error(data.error);
+    const answer = (data.content||[]).map(b => b.text||'').join('');
+    document.getElementById('aiOutput').innerHTML += `
+      <div class="ai-section" style="margin-top:20px;padding-top:20px;border-top:1px solid var(--border)">
+        <div class="ai-section-title">Respuesta: "${q.substring(0,40)}${q.length>40?'...':''}"</div>
+        <p class="ai-text">${answer}</p>
+      </div>`;
+    document.getElementById('aiOutput').classList.add('visible');
+    document.getElementById('aiEmpty').style.display = 'none';
+    input.value = '';
+  } catch(e) { alert('Error: ' + e.message); }
+  btn.disabled = false; btn.textContent = 'Preguntar';
+}
+
+function renderAnalysis(a) {
+  const fc = { bajo:'var(--green)', moderado:'var(--amber)', alto:'var(--red)', crítico:'var(--red)', critico:'var(--red)' };
+  const fatigaColor = (a.fatiga && fc[a.fatiga.nivel]) || 'var(--text2)';
+  let html = `<div class="ai-section"><div class="ai-section-title">Resumen profesional</div><p class="ai-text">${a.resumen||''}</p></div>`;
+  if (a.alertas && a.alertas.length) {
+    html += `<div class="ai-section"><div class="ai-section-title">Alertas detectadas</div>${a.alertas.map(al => `<div class="alert-row alert-${al.tipo}"><span>${al.texto}</span></div>`).join('')}</div>`;
+  }
+  if (a.volumen_musculos && a.volumen_musculos.length) {
+    html += `<div class="ai-section"><div class="ai-section-title">Volumen por grupo muscular</div><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px">${a.volumen_musculos.map(v => {
+      const col = v.estado === 'optimo' ? 'var(--green)' : v.estado === 'excesivo' ? 'var(--red)' : 'var(--amber)';
+      return `<div style="background:var(--bg3);border-radius:8px;padding:10px 12px;border:1px solid var(--border);border-left:3px solid ${col}"><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:12px;color:var(--text2);font-family:var(--mono);text-transform:uppercase">${v.musculo}</span><span style="font-family:var(--mono);font-size:13px;color:${col}">${v.series_semana} series</span></div><div style="font-size:12px;color:var(--text3);line-height:1.4">${v.recomendacion}</div></div>`;
+    }).join('')}</div></div>`;
+  }
+  if (a.fatiga) {
+    html += `<div class="ai-section"><div class="ai-section-title">Fatiga acumulada</div><div style="display:flex;align-items:center;gap:16px;margin-bottom:10px"><div style="flex:1;background:var(--border2);border-radius:4px;height:8px;overflow:hidden"><div style="height:100%;width:${a.fatiga.score}%;background:${fatigaColor};border-radius:4px;transition:width 1s ease"></div></div><span style="font-family:var(--mono);font-size:14px;color:${fatigaColor};font-weight:500;min-width:100px;text-align:right">${(a.fatiga.nivel||'').toUpperCase()} (${a.fatiga.score}%)</span></div><p class="ai-text">${a.fatiga.explicacion}</p></div>`;
+  }
+  if (a.tendencias_ejercicios && a.tendencias_ejercicios.length) {
+    html += `<div class="ai-section"><div class="ai-section-title">Tendencias por ejercicio</div><div style="display:flex;flex-direction:column;gap:6px">${a.tendencias_ejercicios.map(p => {
+      const col = p.tendencia === 'subiendo' ? 'var(--green)' : p.tendencia === 'bajando' ? 'var(--red)' : p.tendencia === 'estancado' ? 'var(--amber)' : 'var(--text3)';
+      const arrow = p.tendencia === 'subiendo' ? '↑' : p.tendencia === 'bajando' ? '↓' : p.tendencia === 'estancado' ? '=' : '→';
+      return `<div style="background:var(--bg3);border-radius:8px;padding:10px 14px;border:1px solid var(--border);display:flex;align-items:center;gap:12px"><span style="color:${col};font-family:var(--mono);font-size:16px;font-weight:bold;min-width:18px;text-align:center">${arrow}</span><div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:8px;margin-bottom:2px"><span style="font-size:13px;font-weight:500;color:var(--text)">${p.ejercicio}</span><span style="font-size:10px;color:var(--text3);font-family:var(--mono);background:var(--bg2);padding:1px 6px;border-radius:4px">${p.musculo||''}</span></div><div style="font-size:12px;color:var(--text3);line-height:1.4">${p.analisis}</div></div><span style="font-family:var(--mono);font-size:13px;color:${col};white-space:nowrap">${p.delta_kg > 0 ? '+' : ''}${p.delta_kg||0}kg</span></div>`;
+    }).join('')}</div></div>`;
+  }
+  if (a.puntos_debiles_analisis) {
+    html += `<div class="ai-section"><div class="ai-section-title">Análisis puntos débiles</div><div style="background:var(--glow);border:1px solid rgba(124,106,247,.3);border-radius:8px;padding:14px 16px"><p class="ai-text" style="margin:0">${a.puntos_debiles_analisis}</p></div></div>`;
+  }
+  if (a.notas_relevantes) {
+    html += `<div class="ai-section"><div class="ai-section-title">Síntesis de notas personales</div><p class="ai-text" style="background:var(--bg3);padding:14px 16px;border-radius:8px;border-left:3px solid var(--accent2)">${a.notas_relevantes}</p></div>`;
+  }
+  if (a.recomendaciones && a.recomendaciones.length) {
+    html += `<div class="ai-section"><div class="ai-section-title">Plan próxima semana</div><div style="display:flex;flex-direction:column;gap:8px">${a.recomendaciones.map((r, i) => `<div style="display:flex;align-items:flex-start;gap:10px"><span style="background:var(--glow);color:var(--accent2);border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;flex-shrink:0;margin-top:1px">${i+1}</span><p class="ai-text" style="margin:0">${r}</p></div>`).join('')}</div></div>`;
+  }
+  if (a.mensaje_cliente) {
+    html += `<div class="ai-section"><div class="ai-section-title">Mensaje listo para WhatsApp</div><div class="msg-ready" id="msgCliente"><button class="msg-copy" onclick="copyMsg()">Copiar</button>${a.mensaje_cliente}</div></div>`;
+  }
+  document.getElementById('aiOutput').innerHTML = html;
+  document.getElementById('aiOutput').classList.add('visible');
+}
+
+function renderRawAnalysis(raw) {
+  document.getElementById('aiOutput').innerHTML = `<div class="ai-section"><div class="ai-section-title">Análisis IA</div><p class="ai-text" style="white-space:pre-wrap">${raw}</p></div>`;
+  document.getElementById('aiOutput').classList.add('visible');
+}
+
+function copyMsg() {
+  const msg = document.getElementById('msgCliente').textContent.replace('Copiar','').trim();
+  navigator.clipboard.writeText(msg).then(() => { const b = document.querySelector('.msg-copy'); b.textContent = '¡Copiado!'; setTimeout(() => b.textContent = 'Copiar', 2000); });
+}
+
+function renderProgresion() {
+  if (!clienteActual || !clienteActual.historico.length) { document.getElementById('progresionGrid').innerHTML = '<p style="color:var(--text3)">Sin datos</p>'; return; }
+  const ejercicios = [...new Set(clienteActual.historico.map(r => r.ejercicio))];
+  document.getElementById('progresionGrid').innerHTML = ejercicios.map(ej => {
+    const rows = clienteActual.historico.filter(r => r.ejercicio === ej).sort((a, b) => a.semana.localeCompare(b.semana));
+    const rms = rows.map(r => r.rm); const maxRm = Math.max(...rms)||1;
+    const last = rows[rows.length-1]; const prev = rows.length > 1 ? rows[rows.length-2] : null;
+    const delta = prev ? last.rm - prev.rm : 0;
+    const col = delta > 0 ? 'var(--green)' : delta < 0 ? 'var(--red)' : 'var(--text3)';
+    return `<div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <span style="font-family:var(--display);font-size:14px;font-weight:700">${ej}</span>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-family:var(--mono);font-size:13px;color:var(--text2)">1RM: ${last.rm}kg</span>
+          <span style="font-family:var(--mono);font-size:12px;color:${col}">${delta>=0?'+':''}${delta}kg</span>
+        </div>
+      </div>
+      <div style="display:flex;align-items:flex-end;gap:6px;height:40px">
+        ${rms.map((rm, i) => `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px"><div style="width:100%;background:${i===rms.length-1?'var(--accent)':'var(--border2)'};border-radius:2px;height:${Math.max(6,Math.round((rm/maxRm)*36))}px"></div><span style="font-size:9px;color:var(--text3);font-family:var(--mono)">${rows[i].semana.replace('Semana ','S')}</span></div>`).join('')}
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:12px">
+        <div style="background:var(--bg3);border-radius:6px;padding:8px;border:1px solid var(--border)"><div style="font-size:10px;color:var(--text3);font-family:var(--mono)">PESO</div><div style="font-size:15px;font-weight:600;font-family:var(--display)">${last.peso}kg</div></div>
+        <div style="background:var(--bg3);border-radius:6px;padding:8px;border:1px solid var(--border)"><div style="font-size:10px;color:var(--text3);font-family:var(--mono)">VOLUMEN</div><div style="font-size:15px;font-weight:600;font-family:var(--display)">${last.volumen.toLocaleString()}kg</div></div>
+        <div style="background:var(--bg3);border-radius:6px;padding:8px;border:1px solid var(--border)"><div style="font-size:10px;color:var(--text3);font-family:var(--mono)">REPS×SERIES</div><div style="font-size:15px;font-weight:600;font-family:var(--display)">${last.reps}×${last.series}</div></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderHistorial() {
+  if (!clienteActual || !clienteActual.historico.length) { document.getElementById('historialTable').innerHTML = '<p style="color:var(--text3)">Sin datos</p>'; return; }
+  const rows = [...clienteActual.historico].sort((a, b) => b.semana.localeCompare(a.semana) || b.dia.localeCompare(a.dia));
+  document.getElementById('historialTable').innerHTML = `<div style="background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden"><div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr style="background:var(--bg3)">${['SEMANA','DÍA','EJERCICIO','SERIES','REPS','PESO','VOLUMEN','1RM EST.'].map(h => `<th style="padding:10px 16px;text-align:${['SERIES','REPS','PESO','VOLUMEN','1RM EST.'].includes(h)?'right':'left'};font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:1px;font-weight:400;white-space:nowrap">${h}</th>`).join('')}</tr></thead><tbody>${rows.map((r, i) => `<tr style="border-top:1px solid var(--border);${i%2===0?'':'background:rgba(255,255,255,.01)'}"><td style="padding:9px 16px;color:var(--text3);font-family:var(--mono);font-size:12px">${r.semana.replace('Semana ','S')}</td><td style="padding:9px 16px;color:var(--text3);font-size:12px">${r.dia}</td><td style="padding:9px 16px;color:var(--text)">${r.ejercicio}</td><td style="padding:9px 16px;text-align:right;font-family:var(--mono);color:var(--text2)">${r.series}</td><td style="padding:9px 16px;text-align:right;font-family:var(--mono);color:var(--text2)">${r.reps}</td><td style="padding:9px 16px;text-align:right;font-family:var(--mono);color:var(--text2)">${r.peso}kg</td><td style="padding:9px 16px;text-align:right;font-family:var(--mono);color:var(--text2)">${r.volumen.toLocaleString()}</td><td style="padding:9px 16px;text-align:right;font-family:var(--mono);color:var(--accent2);font-weight:500">${r.rm}kg</td></tr>`).join('')}</tbody></table></div></div>`;
+}
+
+async function recargar() {
+  if (!clienteActual) return;
+  const idx = DB.clientes.findIndex(c => c.nombre === clienteActual.nombre);
+  if (idx === -1) return;
+  DB.clientes[idx].cargado = false;
+  await selectCliente(idx);
+}
+
+// PERFIL
+function getPerfil(nombre) {
+  try { const d = JSON.parse(localStorage.getItem('fc_perfiles')||'{}'); return d[nombre] || {}; } catch(e) { return {}; }
+}
+function savePerfil(nombre, p) {
+  try { const d = JSON.parse(localStorage.getItem('fc_perfiles')||'{}'); d[nombre] = p; localStorage.setItem('fc_perfiles', JSON.stringify(d)); } catch(e) {}
+}
+function abrirPerfil() {
+  if (!clienteActual) return;
+  const p = getPerfil(clienteActual.nombre);
+  document.getElementById('perfilNombre').textContent = clienteActual.nombre;
+  document.getElementById('perfilObjetivo').value = p.objetivo||'';
+  document.getElementById('perfilDebiles').value = p.debiles||'';
+  document.getElementById('perfilNotasEnt').value = p.notasEnt||'';
+  document.getElementById('perfilModal').style.display = 'flex';
+}
+function guardarPerfil() {
+  savePerfil(clienteActual.nombre, {
+    objetivo: document.getElementById('perfilObjetivo').value.trim(),
+    debiles: document.getElementById('perfilDebiles').value.trim(),
+    notasEnt: document.getElementById('perfilNotasEnt').value.trim()
+  });
+  document.getElementById('perfilModal').style.display = 'none';
+}
+
+init();
+</script>
+</body>
+</html>
