@@ -891,36 +891,27 @@ const R_PRIORIDADES = ["Deltoides lateral","Deltoides posterior","Dorsal"];
 const R_BOOST = 4;
 let R_rutina = null;
 
-function R_generar(){
-  if(!clienteActual){ alert('Selecciona primero un cliente.'); return; }
-  const nombre = clienteActual.nombre;
-  R_rutina = {
-    rutina_id: (nombre.split(' ')[0].toUpperCase()) + '-' + new Date().toISOString().slice(0,7),
-    email: clienteActual.email || '',
-    cliente: nombre, plan: clienteActual.plan || 'Pro',
-    bloque: 'MES ' + (clienteActual.semana_actual || 1),
-    periodizacion: 'ondulante',
-    resumen: 'Propuesta base. (La generación con IA desde la ficha es la Tarea 2, aún pendiente.) Revisa y ajusta antes de aprobar.',
-    avisos: [],
-    dias: [
-      {dia:'Día 1 — Torso (énfasis hombro)', ejercicios:[
-        {orden:1,ejercicio:'Press Militar en máquina',grupo:'HOMBROS',cal:1,series:2,reps:'8-10',rir:3,descanso:'1 min',notas:''},
-        {orden:2,ejercicio:'Laterales en polea',grupo:'HOMBROS',cal:1,series:3,reps:'10-12',rir:2,descanso:'2 min',notas:''},
-        {orden:3,ejercicio:'Face Pull Cuerda',grupo:'HOMBROS',cal:0,series:3,reps:'12-15',rir:2,descanso:'90 s',notas:''},
-        {orden:4,ejercicio:'Curl Spider con mancuernas',grupo:'BRAZOS',cal:1,series:2,reps:'10-12',rir:2,descanso:'90 s',notas:''},
-        {orden:5,ejercicio:'Triceps en polea con cuerda larga',grupo:'BRAZOS',cal:1,series:2,reps:'10-12',rir:2,descanso:'90 s',notas:''}
-      ]},
-      {dia:'Día 2 — Pierna', ejercicios:[
-        {orden:1,ejercicio:'Prensa con rom',grupo:'PIERNAS',cal:2,series:3,reps:'10-12',rir:2,descanso:'2 min',notas:''},
-        {orden:2,ejercicio:'Curl de femoral sentado en maquina',grupo:'PIERNAS',cal:1,series:3,reps:'10-12',rir:2,descanso:'2 min',notas:''},
-        {orden:3,ejercicio:'Extensión de rodilla en máquina',grupo:'PIERNAS',cal:1,series:3,reps:'12-15',rir:1,descanso:'90 s',notas:''},
-        {orden:4,ejercicio:'Hip thrust con barra',grupo:'PIERNAS',cal:1,series:3,reps:'8-10',rir:2,descanso:'2 min',notas:''},
-        {orden:5,ejercicio:'Gemelos de pie en máquina',grupo:'PIERNAS',cal:0,series:4,reps:'12-15',rir:1,descanso:'60 s',notas:''}
-      ]}
-    ]
-  };
-  const est=document.getElementById('rEstado'); est.textContent='PROPUESTA'; est.className='r-estado';
-  R_render();
+async function R_generar(){
+  if(!clienteActual){ alert('Selecciona un cliente primero.'); return; }
+  const estadoEl = document.getElementById('rEstado');
+  estadoEl.textContent = 'GENERANDO…';
+  estadoEl.className = 'r-estado';
+  try {
+    const bloque = 'MES ' + (clienteActual.semana_actual || 1);
+    const url = SHEETS_URL + "?action=generar_rutina"
+      + "&cliente=" + encodeURIComponent(clienteActual.nombre.toLowerCase())
+      + "&bloque=" + encodeURIComponent(bloque);
+    const data = await fetch(url).then(r => r.json());
+    if (!data || data.error) throw new Error((data && data.error) || 'Respuesta vacía del backend');
+    if (!data.dias || !data.dias.length) throw new Error('La propuesta no trae días.');
+    R_rutina = data;
+    estadoEl.textContent = 'PROPUESTA';
+    R_render();
+  } catch (err) {
+    estadoEl.textContent = 'ERROR';
+    alert('No se pudo generar la rutina: ' + err.message);
+  }
+}
 }
 
 function R_render(){
