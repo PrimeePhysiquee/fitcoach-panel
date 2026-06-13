@@ -905,6 +905,7 @@ function R_swap(di,ei,nombre){
   e.ejercicio = nombre;
   const c = R_CATALOGO[nombre];
   if(c){ e.grupo=c.grupo; e.submusculo=c.submusculo; e.secundarios=c.secundarios; e.url_video=c.url; e.notas=c.notas; }
+  e.motivo='';
   R_render();
 }
 async function R_generar(){
