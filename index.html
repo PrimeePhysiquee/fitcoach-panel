@@ -941,7 +941,7 @@ function R_render(){
         <td><textarea onchange="R_upd(${di},${ei},'notas',this.value)">${e.notas||''}</textarea></td>
         <td style="white-space:nowrap"><button class="r-info" onclick="R_toggle(${di},${ei})">ⓘ</button><button class="r-del" onclick="R_del(${di},${ei})" style="margin-left:18px">✕</button></td>
       </tr>
-      <tr class="r-detail" id="rdet-${di}-${ei}" style="display:none"><td colspan="9"><div><b>Trabaja:</b> ${e.grupo||m.p||'—'}</div><div style="margin-top:4px"><b>Por qué:</b> ${e.motivo||m.info||e.notas||'—'}</div></td></tr>`;
+      <tr class="r-detail" id="rdet-${di}-${ei}" style="display:none"><td colspan="9"><div><b>Trabaja:</b> ${e.submusculo||e.grupo||'—'}${e.secundarios?` <span style="color:var(--text3)">(indirecto: ${e.secundarios})</span>`:''}</div><div style="margin-top:4px"><b>Por qué:</b> ${e.motivo||e.notas||'—'}</div></td></tr>`;
     }).join('');
     html += `<div class="r-dia"><h4>${d.dia}</h4><table class="r-table"><thead><tr><th>#</th><th>Ejercicio</th><th>Cal.</th><th>Series</th><th>Reps</th><th>RIR</th><th>Descanso</th><th>Notas</th><th></th></tr></thead><tbody>${rows}</tbody></table><button class="r-add" onclick="R_add(${di})">+ Añadir ejercicio</button></div>`;
   });
@@ -962,20 +962,26 @@ function R_add(di){ const ej=R_rutina.dias[di].ejercicios; ej.push({orden:ej.len
 function R_copy(i){ navigator.clipboard && navigator.clipboard.writeText(R_rutina.avisos[i].mensaje); alert('Mensaje copiado para WhatsApp.'); }
 const R_GRUPO_RANGOS = { PECHO:[10,20], ESPALDA:[12,22], HOMBROS:[12,24], BRAZOS:[10,20], PIERNAS:[14,28], ABDOMINALES:[6,16], ANTEBRAZO:[4,12], CUELLO:[2,8] };
 function R_vol(){
-  const dir={};
+  const dir={}, ind={};
   R_rutina.dias.forEach(d=>d.ejercicios.forEach(e=>{
-    const g=(e.grupo||'OTRO').toString().toUpperCase().trim();
-    dir[g]=(dir[g]||0)+Number(e.series||0);
+    const ser=Number(e.series||0);
+    const sub=e.submusculo||'(sin clasificar)';
+    dir[sub]=(dir[sub]||0)+ser;
+    (e.secundarios?String(e.secundarios).split('|'):[]).forEach(x=>{ x=x.trim(); if(x) ind[x]=(ind[x]||0)+0.5*ser; });
   }));
-  const orden=['PECHO','ESPALDA','HOMBROS','BRAZOS','PIERNAS','ABDOMINALES','ANTEBRAZO','CUELLO'];
-  const grupos=Object.keys(dir).sort((a,b)=>{const ia=orden.indexOf(a),ib=orden.indexOf(b);return (ia<0?99:ia)-(ib<0?99:ib);});
-  if(!grupos.length){ document.getElementById('rVol').innerHTML='<div style="color:var(--text3);font-size:13px">Sin ejercicios.</div>'; return; }
-  const cards=grupos.map(g=>{
-    const rg=R_GRUPO_RANGOS[g]; const v=dir[g]; let cls='',rng='—';
-    if(rg){ rng=`${rg[0]}-${rg[1]}/sem`; cls=v<rg[0]?'lo':(v>rg[1]?'hi':'ok'); }
-    return `<div class="r-volcard ${cls}"><b>${g}</b><span class="num">${v}</span><span class="rng">óptimo ${rng}</span></div>`;
-  }).join('');
-  document.getElementById('rVol').innerHTML = `<div class="r-volgrid">${cards}</div>`;
+  let html='';
+  Object.keys(R_GRUPO_SUB).forEach(g=>{
+    const subs=R_GRUPO_SUB[g].filter(s=>(dir[s]>0||ind[s]>0));
+    if(!subs.length) return;
+    const cards=subs.map(s=>{
+      const prio=R_PRIORIDADES.includes(s); const rg=R_RANGOS[s]; let cls='',rng='—';
+      if(rg){ const hi=prio?rg[1]+R_BOOST:rg[1]; rng=`${rg[0]}-${hi}/sem`; const v=dir[s]||0; cls=v<rg[0]?'lo':(v>hi?'hi':'ok'); }
+      const it=ind[s]?`<span class="rng">+${ind[s].toFixed(1)} indir.</span>`:'';
+      return `<div class="r-volcard ${cls}"><b>${prio?'⭐ ':''}${s}</b><span class="num">${dir[s]||0}</span><span class="rng">óptimo ${rng}</span>${it}</div>`;
+    }).join('');
+    html+=`<div class="r-volgroup"><h5>${g}</h5><div class="r-volgrid">${cards}</div></div>`;
+  });
+  document.getElementById('rVol').innerHTML = html || '<div style="color:var(--text3);font-size:13px">Sin ejercicios.</div>';
 }
 function R_payload(){ const p=JSON.parse(JSON.stringify(R_rutina)); p.estado='Aprobada'; return p; }
 async function R_aprobar(){
