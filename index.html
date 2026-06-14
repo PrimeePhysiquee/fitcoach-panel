@@ -816,8 +816,7 @@ function guardarPerfil() {
 init();
 </script>
 
-<script>
-/* ===================== MÓDULO RUTINAS ===================== */
+<script>/* ===================== MÓDULO RUTINAS ===================== */
 let modoActual = 'entreno';
 function setModo(m){
   modoActual = m;
@@ -840,7 +839,6 @@ function setModo(m){
   }
 }
 
-// Rangos de volumen por submúsculo
 const R_GRUPO_SUB = {
   PECHO:["Pectoral superior","Pectoral medio","Pectoral inferior"],
   ESPALDA:["Dorsal","Espalda media","Trapecio","Lumbar"],
@@ -860,7 +858,6 @@ const R_RANGOS = {
 const R_PRIORIDADES = ["Deltoides lateral","Deltoides posterior","Dorsal"];
 const R_BOOST = 4;
 
-// Catálogo completo (buscador) + preferencias del cliente
 let R_CATALOGO = {}, R_NOMBRES = [];
 async function R_cargarCatalogo(){
   if (R_NOMBRES.length) return;
@@ -945,12 +942,12 @@ function R_render(){
       </tr>
       <tr class="r-detail" id="rdet-${di}-${ei}" style="display:none"><td colspan="10"><div><b>Trabaja:</b> ${e.submusculo||e.grupo||'—'}${e.secundarios?` <span style="color:var(--text3)">(indirecto: ${e.secundarios})</span>`:''}</div><div style="margin-top:4px"><b>Por qué:</b> ${e.motivo||e.notas||'—'}</div></td></tr>`;
     }).join('');
-    html += `<div class="r-dia"><h4>${d.dia}</h4><table class="r-table"><thead><tr><th>#</th><th>Ejercicio</th><th>Cal.</th><th>Series</th><th>Reps</th><th>Peso</th><th>RIR</th><th>Descanso</th><th>Notas</th><th></th></tr></thead><tbody>${rows}</tbody></table><button class="r-add" onclick="R_add(${di})">+ Añadir ejercicio</button></div>`;
+    html += `<div class="r-dia"><h4>${d.dia} <button class="r-add" style="font-size:11px;padding:3px 8px;margin-left:8px" onclick="R_regenDia(${di})">↻ Regenerar día</button></h4><table class="r-table"><thead><tr><th>#</th><th>Ejercicio</th><th>Cal.</th><th>Series</th><th>Reps</th><th>Peso</th><th>RIR</th><th>Descanso</th><th>Notas</th><th></th></tr></thead><tbody>${rows}</tbody></table><button class="r-add" onclick="R_add(${di})">+ Añadir ejercicio</button></div>`;
   });
   html += `<div class="r-box"><h3>Volumen por músculo (series directas · referencia semanal)</h3><div id="rVol"></div><div style="font-size:11px;color:var(--text3);margin-top:6px">Despliega cada grupo para ver el detalle por submúsculo. "+X ind." = estrés indirecto. ⭐ = punto débil.</div></div>`;
   html += `<div class="r-actions">
     <button class="btn btn-ghost" onclick="R_rechazar()">Rechazar</button>
-    <button class="btn btn-ghost" onclick="R_generar()">Regenerar</button>
+    <button class="btn btn-ghost" onclick="R_generar()">Regenerar todo</button>
     <button class="btn btn-ghost" onclick="alert('Guardado como propuesta (borrador).')">Guardar cambios</button>
     <button class="btn btn-primary" onclick="R_aprobar()">Aprobar y guardar en RUTINAS</button>
   </div>`;
@@ -970,6 +967,27 @@ function R_toggle(di,ei){ const e=document.getElementById('rdet-'+di+'-'+ei); e.
 function R_del(di,ei){ if(!confirm('¿Quitar este ejercicio de la rutina?')) return; R_rutina.dias[di].ejercicios.splice(ei,1); R_rutina.dias[di].ejercicios.forEach((e,i)=>e.orden=i+1); R_render(); }
 function R_add(di){ const ej=R_rutina.dias[di].ejercicios; ej.push({orden:ej.length+1,ejercicio:(R_NOMBRES[0]||''),grupo:'',submusculo:'',secundarios:'',cal:0,series:3,reps:'10-12',rir:2,descanso:'90 s',notas:'',peso_sugerido:''}); R_render(); }
 function R_copy(i){ navigator.clipboard && navigator.clipboard.writeText(R_rutina.avisos[i].mensaje); alert('Mensaje copiado para WhatsApp.'); }
+async function R_regenDia(di){
+  if(!R_rutina||!clienteActual) return;
+  const dia=R_rutina.dias[di];
+  const evitar=R_rutina.dias.filter((_,i)=>i!==di).reduce((a,d)=>a.concat(d.ejercicios.map(e=>e.ejercicio)),[]).join(', ');
+  const bloque='MES '+(clienteActual.semana_actual||1);
+  const est=document.getElementById('rEstado'); const prev=est?est.textContent:''; if(est) est.textContent='REGENERANDO DÍA…';
+  try{
+    await R_cargarCatalogo();
+    const url=SHEETS_URL+"?action=generar_dia"
+      +"&cliente="+encodeURIComponent(clienteActual.nombre.toLowerCase())
+      +"&dia="+encodeURIComponent(dia.dia||('Día '+(di+1)))
+      +"&evitar="+encodeURIComponent(evitar)
+      +"&bloque="+encodeURIComponent(bloque)
+      +"&indicaciones="+encodeURIComponent(R_IND||"");
+    const data=await fetch(url).then(r=>r.json());
+    if(!data||data.error||!data.ejercicios||!data.ejercicios.length) throw new Error((data&&data.error)||'Sin ejercicios');
+    R_rutina.dias[di]={dia:data.dia||dia.dia, ejercicios:data.ejercicios};
+    if(est) est.textContent=prev||'PROPUESTA';
+    R_render();
+  }catch(err){ if(est) est.textContent=prev||'PROPUESTA'; alert('No se pudo regenerar el día: '+err.message); }
+}
 function R_grupoDe(sub){ for(const g in R_GRUPO_SUB){ if(R_GRUPO_SUB[g].includes(sub)) return g; } return 'OTROS'; }
 function R_avisosHTML(avisos){
   if(!avisos||!avisos.length) return '';
