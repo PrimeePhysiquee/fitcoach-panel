@@ -839,7 +839,7 @@ function setModo(m){
     if(clienteActual) document.getElementById('topTitle').textContent = clienteActual.nombre;
   }
 }
- 
+
 // Rangos de volumen por submúsculo
 const R_GRUPO_SUB = {
   PECHO:["Pectoral superior","Pectoral medio","Pectoral inferior"],
@@ -859,7 +859,7 @@ const R_RANGOS = {
 };
 const R_PRIORIDADES = ["Deltoides lateral","Deltoides posterior","Dorsal"];
 const R_BOOST = 4;
- 
+
 // Catálogo completo (buscador) + preferencias del cliente
 let R_CATALOGO = {}, R_NOMBRES = [];
 async function R_cargarCatalogo(){
@@ -880,20 +880,19 @@ async function R_cargarPrefs(){
 function R_prefsHTML(){
   if(!R_PREFS||R_PREFS.error) return '';
   const p=R_PREFS;
-  const eq=(p.equip_no_disponible||[]).join(', ')||'—';
   return `<div class="r-box gold"><h3>Antes de generar — contexto del cliente</h3>
     <div style="font-size:13px;line-height:1.7">
       <div><b>Punto débil:</b> ${p.punto_debil||'—'} · <b>Días:</b> ${p.dias||'—'}</div>
       <div><b>Le gustan:</b> ${p.gustan||'—'}</div>
       <div><b>NO quiere:</b> ${p.no_quiere||'—'}</div>
-      <div><b>NO tiene (equipo):</b> ${eq}</div>
+      <div><b>Máquinas que tiene:</b> ${p.maquinas||'—'}</div>
       ${p.lesiones?`<div><b>Lesiones:</b> ${p.lesiones}</div>`:''}
     </div>
     <div style="margin-top:10px"><b style="font-size:12px;color:var(--accent2)">TUS INDICACIONES (opcional · prioridad máxima):</b>
     <textarea id="rIndic" oninput="R_IND=this.value" placeholder="Ej: press militar con barra el día de hombro, nada de hip thrust, laterales en polea..." style="width:100%;min-height:60px;margin-top:6px;background:var(--bg);color:var(--text);border:1px solid var(--border2);border-radius:8px;padding:8px;font-family:inherit;font-size:13px">${R_IND.replace(/</g,'&lt;')}</textarea></div>
   </div>`;
 }
- 
+
 let R_rutina = null;
 async function R_generar(){
   if(!clienteActual){ alert('Selecciona un cliente primero.'); return; }
