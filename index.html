@@ -951,6 +951,7 @@ function R_render(){
         <td style="width:30px">${e.orden}</td>
         <td><input list="rcatlist" value="${(e.ejercicio||'').replace(/"/g,'&quot;')}" onchange="R_swap(${di},${ei},this.value)" style="min-width:210px"></td>
         <td><input class="r-mini" type="number" value="${e.cal}" onchange="R_upd(${di},${ei},'cal',this.value)"></td>
+        <td><input class="r-mini" value="${e.peso_sugerido||''}" onchange="R_upd(${di},${ei},'peso_sugerido',this.value)" placeholder="kg"></td>
         <td><input class="r-mini" type="number" value="${e.series}" onchange="R_upd(${di},${ei},'series',this.value)"></td>
         <td><input class="r-mini" value="${e.reps}" onchange="R_upd(${di},${ei},'reps',this.value)"></td>
         <td><input class="r-mini" type="number" value="${e.rir}" onchange="R_upd(${di},${ei},'rir',this.value)"></td>
@@ -958,9 +959,9 @@ function R_render(){
         <td><textarea onchange="R_upd(${di},${ei},'notas',this.value)">${e.notas||''}</textarea></td>
         <td style="white-space:nowrap"><button class="r-info" onclick="R_toggle(${di},${ei})">ⓘ</button><button class="r-del" onclick="R_del(${di},${ei})" style="margin-left:18px">✕</button></td>
       </tr>
-      <tr class="r-detail" id="rdet-${di}-${ei}" style="display:none"><td colspan="9"><div><b>Trabaja:</b> ${e.submusculo||e.grupo||'—'}${e.secundarios?` <span style="color:var(--text3)">(indirecto: ${e.secundarios})</span>`:''}</div><div style="margin-top:4px"><b>Por qué:</b> ${e.motivo||e.notas||'—'}</div></td></tr>`;
+      <tr class="r-detail" id="rdet-${di}-${ei}" style="display:none"><td colspan="10"><div><b>Trabaja:</b> ${e.submusculo||e.grupo||'—'}${e.secundarios?` <span style="color:var(--text3)">(indirecto: ${e.secundarios})</span>`:''}</div><div style="margin-top:4px"><b>Por qué:</b> ${e.motivo||e.notas||'—'}</div></td></tr>`;
     }).join('');
-    html += `<div class="r-dia"><h4>${d.dia}</h4><table class="r-table"><thead><tr><th>#</th><th>Ejercicio</th><th>Cal.</th><th>Series</th><th>Reps</th><th>RIR</th><th>Descanso</th><th>Notas</th><th></th></tr></thead><tbody>${rows}</tbody></table><button class="r-add" onclick="R_add(${di})">+ Añadir ejercicio</button></div>`;
+    html += `<div class="r-dia"><h4>${d.dia}</h4><table class="r-table"><thead><tr><th>#</th><th>Ejercicio</th><th>Cal.</th><th>Series</th><th>Reps</th><th>Peso</th><th>RIR</th><th>Descanso</th><th>Notas</th><th></th></tr></thead><tbody>${rows}</tbody></table><button class="r-add" onclick="R_add(${di})">+ Añadir ejercicio</button></div>`;
   });
   html += `<div class="r-box"><h3>Volumen por músculo (series directas · referencia semanal)</h3><div id="rVol"></div><div style="font-size:11px;color:var(--text3);margin-top:6px">Cifra = series directas. "+X indir." = estrés indirecto (secundarios, no suma serie). ⭐ = punto débil (rango ampliado).</div></div>`;
   html += `<div class="r-actions">
