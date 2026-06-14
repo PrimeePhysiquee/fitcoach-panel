@@ -941,7 +941,7 @@ function R_render(){
   let html = `<div class="r-cli"><h2>${r.cliente}</h2><span class="r-pill plan">${r.plan}</span><span class="r-pill">${r.bloque}</span><span class="r-pill">Periodización: ${r.periodizacion}</span></div>`;
   html += `<div class="r-box gold"><h3>Resumen para el entrenador</h3><div>${r.resumen}</div></div>`;
   if (r.avisos && r.avisos.length){
-    html += `<div class="r-box"><h3>Avisos</h3>` + r.avisos.map((a,i)=>`<div class="r-aviso"><span class="r-tag">${(a.tipo||'aviso').toUpperCase()}</span><div style="flex:1">${a.texto||''}${a.mensaje?`<div class="r-msg"><b>Mensaje al cliente:</b> ${a.mensaje} <button class="r-copy" onclick="R_copy(${i})">Copiar</button></div>`:''}</div></div>`).join('') + `</div>`;
+    html += R_avisosHTML(r.avisos);
   }
   r.dias.forEach((d,di)=>{
     let rows = d.ejercicios.map((e,ei)=>{
@@ -978,6 +978,26 @@ function R_del(di,ei){ if(!confirm('¿Quitar este ejercicio de la rutina?')) ret
 function R_add(di){ const ej=R_rutina.dias[di].ejercicios; ej.push({orden:ej.length+1,ejercicio:R_ALL[0],grupo:'',cal:0,series:3,reps:'10-12',rir:2,descanso:'90 s',notas:''}); R_render(); }
 function R_copy(i){ navigator.clipboard && navigator.clipboard.writeText(R_rutina.avisos[i].mensaje); alert('Mensaje copiado para WhatsApp.'); }
 const R_GRUPO_RANGOS = { PECHO:[10,20], ESPALDA:[12,22], HOMBROS:[12,24], BRAZOS:[10,20], PIERNAS:[14,28], ABDOMINALES:[6,16], ANTEBRAZO:[4,12], CUELLO:[2,8] };
+function R_grupoDe(sub){ for(const g in R_GRUPO_SUB){ if(R_GRUPO_SUB[g].includes(sub)) return g; } return 'OTROS'; }
+function R_avisosHTML(avisos){
+  if(!avisos||!avisos.length) return '';
+  const otros=avisos.filter(a=>a.tipo!=='frecuencia');
+  const freq=avisos.filter(a=>a.tipo==='frecuencia');
+  let html='';
+  otros.forEach(a=>{ const oi=avisos.indexOf(a);
+    html+=`<div class="r-aviso"><span class="r-tag">${(a.tipo||'aviso').toUpperCase()}</span><div style="flex:1">${a.texto||''}${a.mensaje?`<div class="r-msg"><b>Mensaje al cliente:</b> ${a.mensaje} <button class="r-copy" onclick="R_copy(${oi})">Copiar</button></div>`:''}</div></div>`; });
+  if(freq.length){
+    const porGrupo={};
+    freq.forEach(a=>{ const g=R_grupoDe(a.musculo); (porGrupo[g]=porGrupo[g]||[]).push(a.musculo); });
+    let bloques='';
+    Object.keys(porGrupo).forEach(g=>{
+      const items=porGrupo[g].map(m=>`<div style="font-size:12px;color:var(--text2);padding:2px 0">• ${m}: frecuencia 1</div>`).join('');
+      bloques+=`<details style="margin:4px 0"><summary style="cursor:pointer;font-size:13px;color:var(--amber)"><b>${g}</b> (${porGrupo[g].length})</summary><div style="margin:4px 0 4px 12px">${items}</div></details>`;
+    });
+    html+=`<div class="r-aviso"><span class="r-tag">FRECUENCIA</span><div style="flex:1">Músculos principales en 1 día — reparte en 2 días:${bloques}</div></div>`;
+  }
+  return `<div class="r-box"><h3>Avisos</h3>${html}</div>`;
+}
 function R_vol(){
   const dir={}, ind={};
   R_rutina.dias.forEach(d=>d.ejercicios.forEach(e=>{
@@ -990,13 +1010,15 @@ function R_vol(){
   Object.keys(R_GRUPO_SUB).forEach(g=>{
     const subs=R_GRUPO_SUB[g].filter(s=>(dir[s]>0||ind[s]>0));
     if(!subs.length) return;
-    const cards=subs.map(s=>{
+    const total=subs.reduce((a,s)=>a+(dir[s]||0),0);
+    const rows=subs.map(s=>{
       const prio=R_PRIORIDADES.includes(s); const rg=R_RANGOS[s]; let cls='',rng='—';
-      if(rg){ const hi=prio?rg[1]+R_BOOST:rg[1]; rng=`${rg[0]}-${hi}/sem`; const v=dir[s]||0; cls=v<rg[0]?'lo':(v>hi?'hi':'ok'); }
-      const it=ind[s]?`<span class="rng">+${ind[s].toFixed(1)} indir.</span>`:'';
-      return `<div class="r-volcard ${cls}"><b>${prio?'⭐ ':''}${s}</b><span class="num">${dir[s]||0}</span><span class="rng">óptimo ${rng}</span>${it}</div>`;
+      if(rg){ const hi=prio?rg[1]+R_BOOST:rg[1]; rng=`${rg[0]}-${hi}`; const v=dir[s]||0; cls=v<rg[0]?'lo':(v>hi?'hi':'ok'); }
+      const col=cls==='lo'?'var(--amber)':cls==='hi'?'var(--red)':'var(--green)';
+      const it=ind[s]?` · +${ind[s].toFixed(1)} ind.`:'';
+      return `<div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text2);padding:2px 0"><span>${prio?'⭐ ':''}${s}</span><span style="font-family:var(--mono);color:${col}">${dir[s]||0} <span style="color:var(--text3)">(${rng})${it}</span></span></div>`;
     }).join('');
-    html+=`<div class="r-volgroup"><h5>${g}</h5><div class="r-volgrid">${cards}</div></div>`;
+    html+=`<details style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;margin-bottom:8px;padding:8px 12px"><summary style="cursor:pointer;font-family:var(--mono);font-size:12px;color:var(--text)"><b>${g}</b> · ${total} series</summary><div style="margin-top:8px">${rows}</div></details>`;
   });
   document.getElementById('rVol').innerHTML = html || '<div style="color:var(--text3);font-size:13px">Sin ejercicios.</div>';
 }
