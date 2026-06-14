@@ -817,7 +817,7 @@ init();
 </script>
 
 <script>
-/* ===================== MÓDULO RUTINAS (añadido) ===================== */
+/* ===================== MÓDULO RUTINAS ===================== */
 let modoActual = 'entreno';
 function setModo(m){
   modoActual = m;
@@ -829,56 +829,26 @@ function setModo(m){
   document.getElementById('topbarRutinas').style.display = esRut ? 'flex' : 'none';
   document.getElementById('view-rutinas').style.display = esRut ? 'block' : 'none';
   ['dashboard','progresion','historial'].forEach(v=>{ const e=document.getElementById('view-'+v); if(e) e.style.display='none'; });
-  if (esRut) { document.getElementById('topTitle').textContent = clienteActual ? clienteActual.nombre : 'Rutinas'; document.getElementById('topSub').textContent = 'Generación de rutinas'; R_render(); }
-  else { setView(currentView, document.querySelector('.nav-btn.active') || document.querySelector('.nav-btn')); if(clienteActual) document.getElementById('topTitle').textContent = clienteActual.nombre; }
+  if (esRut) {
+    document.getElementById('topTitle').textContent = clienteActual ? clienteActual.nombre : 'Rutinas';
+    document.getElementById('topSub').textContent = 'Generación de rutinas';
+    R_render();
+    R_cargarPrefs().then(R_render);
+  } else {
+    setView(currentView, document.querySelector('.nav-btn.active') || document.querySelector('.nav-btn'));
+    if(clienteActual) document.getElementById('topTitle').textContent = clienteActual.nombre;
+  }
 }
-
-const R_CAT = {
-  HOMBROS:["Press Militar en máquina","Press militar con barra de pie","Laterales en polea","Laterales con mancuernas","Face Pull Cuerda","Posterior en polea doble","Y-raise en banco inclinado"],
-  BRAZOS:["Curl Spider con mancuernas","Curl martillo en polea","Triceps en polea con cuerda larga","Triceps patada con mancuernas","Curl con barra Z de pie","Press francés con mancuernas"],
-  PECHO:["Press inclinado a 15º con mancuernas","Press banca mancuernas","Pec Deck","Floor press","Press inclinado superior en maquina libre"],
-  ESPALDA:["Pulldown en maquina dirigida","Remo en maquina con agarre ancho","Remo Seal en banco","Dominadas","Pull Over en máquina"],
-  PIERNAS:["Prensa con rom","Sentadilla Hack","Extensión de rodilla en máquina","Curl de femoral sentado en maquina","Hip thrust con barra","Gemelos de pie en máquina"]
-};
-const R_META = {
-  "Press Militar en máquina":{p:"Deltoides anterior",s:["Deltoides lateral","Tríceps"],info:"Empuje vertical para el deltoides anterior, con ayuda del lateral. Mete bastante tríceps, no lo satures después."},
-  "Press militar con barra de pie":{p:"Deltoides anterior",s:["Deltoides lateral","Tríceps"],info:"Básico de empuje de hombro de pie. Carga anterior y tríceps, pide core."},
-  "Laterales en polea":{p:"Deltoides lateral",s:[],info:"El mejor para el deltoides lateral: tensión constante. Clave para hombros anchos (V-taper)."},
-  "Laterales con mancuernas":{p:"Deltoides lateral",s:[],info:"Aísla el deltoides lateral. Anchura de hombros."},
-  "Face Pull Cuerda":{p:"Deltoides posterior",s:["Trapecio"],info:"Deltoides posterior y manguito: salud del hombro y postura. Poco estrés articular."},
-  "Posterior en polea doble":{p:"Deltoides posterior",s:[],info:"Aísla el deltoides posterior, casi siempre retrasado."},
-  "Y-raise en banco inclinado":{p:"Deltoides posterior",s:["Trapecio"],info:"Deltoides posterior y trapecio bajo. Mejora la postura."},
-  "Curl Spider con mancuernas":{p:"Bíceps",s:[],info:"Bíceps en estiramiento y sin impulso. Aislamiento puro."},
-  "Curl martillo en polea":{p:"Braquial/Antebrazo",s:["Bíceps"],info:"Agarre neutro: braquial y antebrazo, grosor del brazo."},
-  "Triceps en polea con cuerda larga":{p:"Tríceps",s:[],info:"Tríceps completo, buena separación. Poco estrés en el codo."},
-  "Triceps patada con mancuernas":{p:"Tríceps",s:[],info:"Pico de contracción del tríceps en extensión."},
-  "Curl con barra Z de pie":{p:"Bíceps",s:["Braquial/Antebrazo"],info:"Básico de bíceps con barra Z, amable para la muñeca."},
-  "Press francés con mancuernas":{p:"Tríceps",s:[],info:"Cabeza larga del tríceps en estiramiento."},
-  "Press inclinado a 15º con mancuernas":{p:"Pectoral superior",s:["Deltoides anterior","Tríceps"],info:"Pecho superior (zona clavicular). Implica hombro anterior y tríceps."},
-  "Press banca mancuernas":{p:"Pectoral medio",s:["Deltoides anterior","Tríceps"],info:"Pecho medio con gran rango. Suma estrés a hombro anterior y tríceps."},
-  "Pec Deck":{p:"Pectoral medio",s:[],info:"Aísla el pecho sin tríceps ni hombro."},
-  "Floor press":{p:"Pectoral medio",s:["Tríceps"],info:"Rango corto: protege el hombro, carga pecho y tríceps."},
-  "Press inclinado superior en maquina libre":{p:"Pectoral superior",s:["Tríceps"],info:"Pecho superior guiado, fácil de cargar con seguridad."},
-  "Pulldown en maquina dirigida":{p:"Dorsal",s:["Bíceps"],info:"Dorsal ancho: anchura de espalda (V-taper)."},
-  "Remo en maquina con agarre ancho":{p:"Espalda media",s:["Dorsal","Deltoides posterior"],info:"Grosor de espalda media y posterior del hombro."},
-  "Remo Seal en banco":{p:"Espalda media",s:["Dorsal"],info:"Pecho apoyado: aísla la espalda sin cargar lumbar."},
-  "Dominadas":{p:"Dorsal",s:["Bíceps"],info:"Tirón vertical básico para anchura de dorsal."},
-  "Pull Over en máquina":{p:"Dorsal",s:[],info:"Aísla el dorsal en arco, casi sin bíceps."},
-  "Prensa con rom":{p:"Cuádriceps",s:["Glúteo"],info:"Cuádriceps con apoyo lumbar y rango completo seguro."},
-  "Sentadilla Hack":{p:"Cuádriceps",s:["Glúteo"],info:"Cuádriceps con buen estiramiento, guiada."},
-  "Extensión de rodilla en máquina":{p:"Cuádriceps",s:[],info:"Aísla el cuádriceps. Bueno para rematar."},
-  "Curl de femoral sentado en maquina":{p:"Femoral",s:[],info:"Aísla los isquios en estiramiento."},
-  "Hip thrust con barra":{p:"Glúteo",s:["Femoral"],info:"Glúteo en máxima contracción."},
-  "Gemelos de pie en máquina":{p:"Gemelo",s:[],info:"Gemelo con rodilla extendida (gastrocnemio)."}
-};
-const R_ALL = Object.keys(R_META);
-function R_metaDe(ej){ return R_META[ej] || {p:null,s:[],info:"Información pendiente."}; }
+ 
+// Rangos de volumen por submúsculo
 const R_GRUPO_SUB = {
   PECHO:["Pectoral superior","Pectoral medio","Pectoral inferior"],
   ESPALDA:["Dorsal","Espalda media","Trapecio","Lumbar"],
   HOMBROS:["Deltoides anterior","Deltoides lateral","Deltoides posterior"],
   BRAZOS:["Bíceps","Tríceps","Braquial/Antebrazo"],
-  PIERNAS:["Cuádriceps","Femoral","Glúteo","Gemelo","Aductor","Abductor"]
+  PIERNAS:["Cuádriceps","Femoral","Glúteo","Gemelo","Aductor","Abductor"],
+  ABDOMINALES:["Abdominales"],
+  CUELLO:["Cuello"]
 };
 const R_RANGOS = {
   "Pectoral superior":[5,9],"Pectoral medio":[6,10],"Pectoral inferior":[3,6],
@@ -889,9 +859,9 @@ const R_RANGOS = {
 };
 const R_PRIORIDADES = ["Deltoides lateral","Deltoides posterior","Dorsal"];
 const R_BOOST = 4;
-let R_rutina = null;
-let R_CATALOGO = {};   // {nombre:{grupo,submusculo,secundarios,url,notas}}
-let R_NOMBRES = [];
+ 
+// Catálogo completo (buscador) + preferencias del cliente
+let R_CATALOGO = {}, R_NOMBRES = [];
 async function R_cargarCatalogo(){
   if (R_NOMBRES.length) return;
   try{
@@ -900,24 +870,43 @@ async function R_cargarCatalogo(){
     R_NOMBRES = Object.keys(R_CATALOGO);
   }catch(e){}
 }
-function R_swap(di,ei,nombre){
-  const e = R_rutina.dias[di].ejercicios[ei];
-  e.ejercicio = nombre;
-  const c = R_CATALOGO[nombre];
-  if(c){ e.grupo=c.grupo; e.submusculo=c.submusculo; e.secundarios=c.secundarios; e.url_video=c.url; e.notas=c.notas; }
-  e.motivo='';
-  R_render();
+let R_PREFS = null, R_IND = '';
+async function R_cargarPrefs(){
+  if(!clienteActual){ R_PREFS=null; return; }
+  try{
+    R_PREFS = await fetch(SHEETS_URL+"?action=cliente_prefs&cliente="+encodeURIComponent(clienteActual.nombre.toLowerCase())).then(r=>r.json());
+  }catch(e){ R_PREFS=null; }
 }
+function R_prefsHTML(){
+  if(!R_PREFS||R_PREFS.error) return '';
+  const p=R_PREFS;
+  const eq=(p.equip_no_disponible||[]).join(', ')||'—';
+  return `<div class="r-box gold"><h3>Antes de generar — contexto del cliente</h3>
+    <div style="font-size:13px;line-height:1.7">
+      <div><b>Punto débil:</b> ${p.punto_debil||'—'} · <b>Días:</b> ${p.dias||'—'}</div>
+      <div><b>Le gustan:</b> ${p.gustan||'—'}</div>
+      <div><b>NO quiere:</b> ${p.no_quiere||'—'}</div>
+      <div><b>NO tiene (equipo):</b> ${eq}</div>
+      ${p.lesiones?`<div><b>Lesiones:</b> ${p.lesiones}</div>`:''}
+    </div>
+    <div style="margin-top:10px"><b style="font-size:12px;color:var(--accent2)">TUS INDICACIONES (opcional · prioridad máxima):</b>
+    <textarea id="rIndic" oninput="R_IND=this.value" placeholder="Ej: press militar con barra el día de hombro, nada de hip thrust, laterales en polea..." style="width:100%;min-height:60px;margin-top:6px;background:var(--bg);color:var(--text);border:1px solid var(--border2);border-radius:8px;padding:8px;font-family:inherit;font-size:13px">${R_IND.replace(/</g,'&lt;')}</textarea></div>
+  </div>`;
+}
+ 
+let R_rutina = null;
 async function R_generar(){
   if(!clienteActual){ alert('Selecciona un cliente primero.'); return; }
   const estadoEl = document.getElementById('rEstado');
   estadoEl.textContent = 'GENERANDO…';
   estadoEl.className = 'r-estado';
-  try {await R_cargarCatalogo();
+  try {
+    await R_cargarCatalogo();
     const bloque = 'MES ' + (clienteActual.semana_actual || 1);
     const url = SHEETS_URL + "?action=generar_rutina"
       + "&cliente=" + encodeURIComponent(clienteActual.nombre.toLowerCase())
-      + "&bloque=" + encodeURIComponent(bloque);
+      + "&bloque=" + encodeURIComponent(bloque)
+      + "&indicaciones=" + encodeURIComponent(R_IND||"");
     const data = await fetch(url).then(r => r.json());
     if (!data || data.error) throw new Error((data && data.error) || 'Respuesta vacía del backend');
     if (!data.dias || !data.dias.length) throw new Error('La propuesta no trae días.');
@@ -929,24 +918,20 @@ async function R_generar(){
     alert('No se pudo generar la rutina: ' + err.message);
   }
 }
-
 function R_render(){
   const wrap = document.getElementById('rWrap');
   if (!wrap) return;
+  const dl = `<datalist id="rcatlist">${R_NOMBRES.map(n=>`<option value="${n.replace(/"/g,'&quot;')}"></option>`).join('')}</datalist>`;
   if (!R_rutina){
-    wrap.innerHTML = `<div class="empty-state"><h3>${clienteActual ? clienteActual.nombre : 'Selecciona un cliente'}</h3><p>Pulsa "Generar propuesta" para crear una rutina editable.</p></div>`;
+    wrap.innerHTML = dl + R_prefsHTML() + `<div class="empty-state"><h3>${clienteActual ? clienteActual.nombre : 'Selecciona un cliente'}</h3><p>Pulsa "Generar propuesta" para crear una rutina editable.</p></div>`;
     return;
   }
   const r = R_rutina;
   let html = `<div class="r-cli"><h2>${r.cliente}</h2><span class="r-pill plan">${r.plan}</span><span class="r-pill">${r.bloque}</span><span class="r-pill">Periodización: ${r.periodizacion}</span></div>`;
   html += `<div class="r-box gold"><h3>Resumen para el entrenador</h3><div>${r.resumen}</div></div>`;
-  if (r.avisos && r.avisos.length){
-    html += R_avisosHTML(r.avisos);
-  }
+  html += R_avisosHTML(r.avisos);
   r.dias.forEach((d,di)=>{
     let rows = d.ejercicios.map((e,ei)=>{
-      const m=R_metaDe(e.ejercicio);
-      const chips=(m.p?`<span class="r-chip">${m.p}</span>`:'')+m.s.map(x=>`<span class="r-chip sec">${x}</span>`).join('');
       return `<tr>
         <td style="width:30px">${e.orden}</td>
         <td><input list="rcatlist" value="${(e.ejercicio||'').replace(/"/g,'&quot;')}" onchange="R_swap(${di},${ei},this.value)" style="min-width:210px"></td>
@@ -963,22 +948,29 @@ function R_render(){
     }).join('');
     html += `<div class="r-dia"><h4>${d.dia}</h4><table class="r-table"><thead><tr><th>#</th><th>Ejercicio</th><th>Cal.</th><th>Series</th><th>Reps</th><th>Peso</th><th>RIR</th><th>Descanso</th><th>Notas</th><th></th></tr></thead><tbody>${rows}</tbody></table><button class="r-add" onclick="R_add(${di})">+ Añadir ejercicio</button></div>`;
   });
-  html += `<div class="r-box"><h3>Volumen por músculo (series directas · referencia semanal)</h3><div id="rVol"></div><div style="font-size:11px;color:var(--text3);margin-top:6px">Cifra = series directas. "+X indir." = estrés indirecto (secundarios, no suma serie). ⭐ = punto débil (rango ampliado).</div></div>`;
+  html += `<div class="r-box"><h3>Volumen por músculo (series directas · referencia semanal)</h3><div id="rVol"></div><div style="font-size:11px;color:var(--text3);margin-top:6px">Despliega cada grupo para ver el detalle por submúsculo. "+X ind." = estrés indirecto. ⭐ = punto débil.</div></div>`;
   html += `<div class="r-actions">
     <button class="btn btn-ghost" onclick="R_rechazar()">Rechazar</button>
     <button class="btn btn-ghost" onclick="R_generar()">Regenerar</button>
     <button class="btn btn-ghost" onclick="alert('Guardado como propuesta (borrador).')">Guardar cambios</button>
     <button class="btn btn-primary" onclick="R_aprobar()">Aprobar y guardar en RUTINAS</button>
   </div>`;
-  wrap.innerHTML = `<datalist id="rcatlist">${R_NOMBRES.map(n=>`<option value="${n.replace(/"/g,'&quot;')}"></option>`).join('')}</datalist>` + html;
+  wrap.innerHTML = dl + R_prefsHTML() + html;
   R_vol();
 }
 function R_upd(di,ei,c,v){ R_rutina.dias[di].ejercicios[ei][c]=v; if(c==='series'||c==='ejercicio') R_render(); }
+function R_swap(di,ei,nombre){
+  const e = R_rutina.dias[di].ejercicios[ei];
+  e.ejercicio = nombre;
+  const c = R_CATALOGO[nombre];
+  if(c){ e.grupo=c.grupo; e.submusculo=c.submusculo; e.secundarios=c.secundarios; e.url_video=c.url; e.notas=c.notas; }
+  e.motivo='';
+  R_render();
+}
 function R_toggle(di,ei){ const e=document.getElementById('rdet-'+di+'-'+ei); e.style.display = e.style.display==='none'?'table-row':'none'; }
 function R_del(di,ei){ if(!confirm('¿Quitar este ejercicio de la rutina?')) return; R_rutina.dias[di].ejercicios.splice(ei,1); R_rutina.dias[di].ejercicios.forEach((e,i)=>e.orden=i+1); R_render(); }
-function R_add(di){ const ej=R_rutina.dias[di].ejercicios; ej.push({orden:ej.length+1,ejercicio:R_ALL[0],grupo:'',cal:0,series:3,reps:'10-12',rir:2,descanso:'90 s',notas:''}); R_render(); }
+function R_add(di){ const ej=R_rutina.dias[di].ejercicios; ej.push({orden:ej.length+1,ejercicio:(R_NOMBRES[0]||''),grupo:'',submusculo:'',secundarios:'',cal:0,series:3,reps:'10-12',rir:2,descanso:'90 s',notas:'',peso_sugerido:''}); R_render(); }
 function R_copy(i){ navigator.clipboard && navigator.clipboard.writeText(R_rutina.avisos[i].mensaje); alert('Mensaje copiado para WhatsApp.'); }
-const R_GRUPO_RANGOS = { PECHO:[10,20], ESPALDA:[12,22], HOMBROS:[12,24], BRAZOS:[10,20], PIERNAS:[14,28], ABDOMINALES:[6,16], ANTEBRAZO:[4,12], CUELLO:[2,8] };
 function R_grupoDe(sub){ for(const g in R_GRUPO_SUB){ if(R_GRUPO_SUB[g].includes(sub)) return g; } return 'OTROS'; }
 function R_avisosHTML(avisos){
   if(!avisos||!avisos.length) return '';
