@@ -652,7 +652,7 @@ async function runAnalysis() {
       const match = clean.match(/\{[\s\S]*\}/);
       analysis = match ? (()=>{ try { return JSON.parse(match[0]); } catch(e2){ return null; } })() : null;
     }
-    if (analysis) renderAnalysis(analysis); else renderRawAnalysis(raw);
+    if (analysis) { renderAnalysis(analysis); guardarAnalisisFitCoach(analysis); } else renderRawAnalysis(raw);
   } catch(err) {
     clearInterval(lt);
     document.getElementById('aiLoading').style.display = 'none';
@@ -664,6 +664,15 @@ async function runAnalysis() {
   if (document.getElementById('aiOutput').classList.contains('visible')) {
     document.getElementById('pdfBtn').style.display = 'block';
   }
+}
+function guardarAnalisisFitCoach(analysis) {
+  if (!clienteActual || !analysis) return;
+  try {
+    fetch(SHEETS_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'guardar_analisis', cliente: clienteActual.nombre.toLowerCase(), analysis: analysis })
+    }).catch(function(e) { console.warn('guardarAnalisisFitCoach:', e); });
+  } catch(e) { console.warn('guardarAnalisisFitCoach:', e); }
 }
 async function runFreePrompt() {
   const input = document.getElementById('freePrompt');
