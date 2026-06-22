@@ -9,7 +9,7 @@
 :root{
   --bg:#0A0A0A;--bg2:#0F0F0F;--bg3:#171717;--card:#131313;
   --border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.15);
-  --accent:#C9A24B;--accent2:#E3BD66;--accent-soft:rgba(201,162,75,0.12);
+  --accent:#A8A8A8;--accent2:#C8C8C8;--accent-soft:rgba(168,168,168,0.12);
   --green:#5BC08C;--green-bg:rgba(91,192,140,0.10);
   --red:#E06A6A;--red-bg:rgba(224,106,106,0.10);
   --amber:#D9A93E;--amber-bg:rgba(217,169,62,0.10);
@@ -706,7 +706,7 @@ function renderAnalysis(a) {
     }).join('')}</div></div>`;
   }
   if (a.puntos_debiles_analisis) {
-    html += `<div class="ai-section"><div class="ai-section-title">Análisis puntos débiles</div><div style="background:var(--accent-soft);border:1px solid rgba(194,168,120,.3);border-radius:8px;padding:14px 16px"><p class="ai-text" style="margin:0">${a.puntos_debiles_analisis}</p></div></div>`;
+    html += `<div class="ai-section"><div class="ai-section-title">Análisis puntos débiles</div><div style="background:var(--accent-soft);border:1px solid rgba(168,168,168,.3);border-radius:8px;padding:14px 16px"><p class="ai-text" style="margin:0">${a.puntos_debiles_analisis}</p></div></div>`;
   }
   if (a.notas_relevantes) {
     html += `<div class="ai-section"><div class="ai-section-title">Síntesis de notas personales</div><p class="ai-text" style="background:var(--bg3);padding:14px 16px;border-radius:8px;border-left:3px solid var(--accent2)">${a.notas_relevantes}</p></div>`;
@@ -815,7 +815,6 @@ function guardarPerfil() {
 }
 init();
 </script>
-
 <script>/* ===================== MÓDULO RUTINAS ===================== */
 let modoActual = 'entreno';
 function setModo(m){
@@ -838,7 +837,6 @@ function setModo(m){
     if(clienteActual) document.getElementById('topTitle').textContent = clienteActual.nombre;
   }
 }
-
 const R_GRUPO_SUB = {
   PECHO:["Pectoral superior","Pectoral medio","Pectoral inferior"],
   ESPALDA:["Dorsal","Espalda media","Trapecio","Lumbar"],
@@ -857,7 +855,6 @@ const R_RANGOS = {
 };
 const R_PRIORIDADES = ["Deltoides lateral","Deltoides posterior","Dorsal"];
 const R_BOOST = 4;
-
 let R_CATALOGO = {}, R_NOMBRES = [];
 async function R_cargarCatalogo(){
   if (R_NOMBRES.length) return;
@@ -889,7 +886,6 @@ function R_prefsHTML(){
     <textarea id="rIndic" oninput="R_IND=this.value" placeholder="Ej: press militar con barra el día de hombro, nada de hip thrust, laterales en polea..." style="width:100%;min-height:60px;margin-top:6px;background:var(--bg);color:var(--text);border:1px solid var(--border2);border-radius:8px;padding:8px;font-family:inherit;font-size:13px">${R_IND.replace(/</g,'&lt;')}</textarea></div>
   </div>`;
 }
-
 let R_rutina = null;
 async function R_generar(){
   if(!clienteActual){ alert('Selecciona un cliente primero.'); return; }
